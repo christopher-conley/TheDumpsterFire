@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <?define ComponentRules="OneToOne"?>
+  <!-- SourceDir instructs IsWiX the location of the directory that contains files for this wix library -->
+  <?define SourceDir="..\KeysCmd\bin\Release\net48\publish"?>
+  <Fragment>
+    <ComponentGroup Id="KeysCmdInstallerFiles">
+    </ComponentGroup>
+  </Fragment>
+</Wix>

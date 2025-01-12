@@ -1,0 +1,1247 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>KeysCmd</name>
+    </assembly>
+    <members>
+        <member name="T:RosettaTools.CLI.KeysCmd.Bootstrap">
+            <summary>
+            Class that bootstraps the application, including initial setup of logging, configuration, and command-line parsing.
+            <br></br>
+            <br>Contains the following methods:</br>
+            <list type="bullet">
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Bootstrap.Main(System.String[])" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Bootstrap.DoCleanup(System.Int32)" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Bootstrap.BuildAppHost(Microsoft.Extensions.Logging.ILoggerFactory)" /></item>
+            </list>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Bootstrap._config">
+            <summary>
+            <see langword="private" /> class variable backing the <see cref="P:RosettaTools.CLI.KeysCmd.Bootstrap.Config"/> <see langword="protected internal" /> property.
+            Instantiates a new <see cref="T:RosettaTools.CLI.KeysCmd.Common.Configuration" /> object.
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Bootstrap.WhoAmI">
+            <summary>
+            <see langword="private" /> class variable which contains the username of the user running the application. 
+            Its value is ultimately determined by the <see cref="P:RosettaTools.CLI.KeysCmd.Common.Configuration.WhoAmI" /> property.
+            <br></br>
+            <br>In this class, this variable is used to log the username of the user running the application. OpenSSH can be
+            finicky with permissions, so it's handy to have this information in the log.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Bootstrap.logProvider">
+            <summary>
+            Custom <see cref="T:Microsoft.Extensions.Logging.ILoggerProvider" /> to enable logging to a file.
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Bootstrap.loggerFactory">
+            <summary>
+            A shared <see cref="T:Microsoft.Extensions.Logging.ILoggerFactory" /> instance for the application. This instance is
+            <br>used as a Singleton in the DI container for injection into dependent classes.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Bootstrap._logger">
+            <summary>
+            <see langword="private" /> class variable backing the <see cref="P:RosettaTools.CLI.KeysCmd.Bootstrap.Logger"/> <see langword="protected internal" /> property.
+            <br>Contains an <see cref="T:Microsoft.Extensions.Logging.ILogger" /> instance used as a Singleton in the DI container.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Bootstrap._shouldLogToConsole">
+            <summary>
+            <see langword="private" /> class variable backing the <see cref="P:RosettaTools.CLI.KeysCmd.Bootstrap.ShouldLogToConsole"/> <see langword="public static" /> property.
+            <br>This determines whether logging/other messages should be echoed to the console or not. When OpenSSH sends a request</br>
+            <br>via "AuthorizedKeysCommand," it expects to receive back nothing but the keys, so anything else written to the console</br>
+            <br>would get jumbled into that and interpreted as a key. This setting ensures that nothing but keys get written to stdout</br>
+            <br>when the -o/--openssh commandline option is used while still enabling loging messages to be written to disk.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Bootstrap._genericHost">
+            <summary>
+            <see langword="protected internal static" /> class variable backing the <see cref="P:RosettaTools.CLI.KeysCmd.Bootstrap.GenericHost"/> <see langword="public static" /> property.
+            <br>Holds a .NET generic host used for DI and the SpectreCLI CLI app.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Bootstrap._appTypeRegistrar">
+            <summary>
+            <see langword="protected internal static" /> class variable backing the <see cref="P:RosettaTools.CLI.KeysCmd.Bootstrap.AppTypeRegistrar"/> <see langword="public static" /> property.
+            <br>Contains the SpectreCLI CLI Type registrar.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Bootstrap._spectreCommandApp">
+            <summary>
+            <see langword="protected internal static" /> class variable backing the <see cref="P:RosettaTools.CLI.KeysCmd.Bootstrap.SpectreCommandApp"/> <see langword="public static" /> property.
+            <br>Holds the built SpectreCLI CLI app which parses commandline arguments and generally controls program control flow.</br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Bootstrap.Config">
+            <summary>
+            Holds configuration settings for the application.
+            <br></br><br>See also: <see cref="F:RosettaTools.CLI.KeysCmd.Bootstrap._config"/> and <seealso cref="T:RosettaTools.CLI.KeysCmd.Common.Configuration" /> for more information.</br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Bootstrap.Logger">
+            <summary>
+            An <see cref="T:Microsoft.Extensions.Logging.ILogger" /> instance used as a Singleton in the DI container.
+            <br></br><br>See also: <seealso cref="F:RosettaTools.CLI.KeysCmd.Bootstrap._logger"/></br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Bootstrap.GenericHost">
+            <summary>
+            A .NET generic host used for DI and the SpectreCLI CLI app.
+            <br></br><br>See also: <seealso cref="F:RosettaTools.CLI.KeysCmd.Bootstrap._genericHost"/></br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Bootstrap.AppTypeRegistrar">
+            <summary>
+            A SpectreCLI CLI Type registrar used for dependency registration and resolution.
+            <br></br><br>See also: <seealso cref="F:RosettaTools.CLI.KeysCmd.Bootstrap._appTypeRegistrar"/></br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Bootstrap.SpectreCommandApp">
+            <summary>
+            Holds the SpectreCLI CLI app, which parses commandline arguments and generally controls program control flow.
+            <br></br><br>See also: <seealso cref="F:RosettaTools.CLI.KeysCmd.Bootstrap._spectreCommandApp"/></br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Bootstrap.ShouldLogToConsole">
+            <summary>
+            Controls whether logging/other messages should be echoed to the console or not. If false, only ssh keys will be written to stdout.
+            <br>This is to ensure bad data doesn't get passed to OpenSSH while still being able to log to a file.</br>
+            <br></br><br>See also: <seealso cref="F:RosettaTools.CLI.KeysCmd.Bootstrap._shouldLogToConsole"/></br>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Bootstrap.Main(System.String[])">
+            <summary>
+            Entrypoint and bootstrapping method for the application. Builds the .NET generic host, sets up logging, and configures/runs the SpectreCLI CLI app.
+            </summary>
+            <param name="args">The args<see cref="T:System.String"/>[]</param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Bootstrap.DoCleanup(System.Int32)">
+            <summary>
+            Method used to log error/success status to the logfile and dispose of the logger and logger factory.
+            </summary>
+            <param name="exitCode">The exitCode<see cref="T:System.Int32"/></param>
+            <returns><see cref="T:System.Void"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Bootstrap.BuildAppHost(Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+            Method which builds the .NET generic host used for DI and the SpectreCLI CLI app.
+            </summary>
+            <param name="sharedFactory">An instantiated <see cref="T:Microsoft.Extensions.Logging.ILoggerFactory"/> object used to build <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instances.</param>
+            <returns><see cref="T:Microsoft.Extensions.Hosting.IHostBuilder"/></returns>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition">
+            <summary>
+            Superclass containing the configuration definition for the application.
+            <br>Used by <see cref="N:Newtonsoft.Json"/> as a strongly-typed backbone to map the JSON config file.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.Config">
+            <summary>
+            Meant to be the root node of the JSON config, but currently unused. Should probably remove it.
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.ConfigRoot">
+            <summary>
+            Container class for the configuration definition.
+            <br>Holds a <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot"/> and <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot"/> definition.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.ConfigRoot.DomainInfo">
+            <summary>
+            Holds an instance of <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot"/>, which contains AD Domain information and associated settings.
+            <br></br><br>See also: <seealso cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot"/></br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.ConfigRoot.Logging">
+            <summary>
+            Holds an instance of <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot"/>, which contains settings related to logging.
+            <br></br><br>See also: <seealso cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot"/></br>
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot">
+            <summary>
+            Class containing AD Domain information and related settings.
+            <br>Members:</br>
+            <list type="bullet">
+            <item><see langword="string"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.UsernameRegex"/></item>
+            <item><see langword="string"/>[] <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.MatchDomains"/></item>
+            <item><see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot"/> <see cref="F:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfo"/></item>
+            </list>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.UsernameRegex">
+            <summary>
+            Class property holding a <see langword="string" /> representation of the regex pattern to match usernames against.
+            <br>The regex pattern must contain 2 explicit capture groups; one named <c>Domain</c>, and the other named <c>User</c></br>
+            <br>Default value is:</br>
+            <br><c>"(?&lt;Domain\&gt;^[a-zA-z0-9]+)\\(?&lt;User&gt;\w+)$"</c></br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.MatchDomains">
+            <summary>
+            Class property holding a <see langword="string" />[] array containing a list of AD domains considered valid for lookups.
+            <br>If the received input domain isn't in this array, no ssh key lookup will be made, even if the regex pattern otherwise matches.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfo">
+            <summary>
+            Holds an instance of <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot"/>, which contains LDAP connection and bind settings.
+            <br></br><br>See also: <seealso cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot"/></br>
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot">
+            <summary>
+            Container class for LDAP connection and bind settings.
+            <br>Members:</br>
+            <list type="bullet">
+            <item><see langword="bool"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.AttemptAutoBind"/></item>
+            <item><see langword="enum"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.AuthType"/></item>
+            <item><see langword="bool"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.EncryptConnection"/></item>
+            <item><see langword="string"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.Domain"/></item>
+            <item><see langword="string"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.DomainController"/></item>
+            <item><see langword="int"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.Port"/></item>
+            <item><see langword="string"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.BaseDN"/></item>
+            <item><see langword="string"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.SearchFilter"/></item>
+            <item><see langword="enum"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.SearchScope"/></item>
+            <item><see langword="string"/> <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.SSHKeyAttribute"/></item>
+            </list>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.AttemptAutoBind">
+            <summary>
+            Class property holding a <see langword="bool" /> value indicating whether to attempt to auto-bind to the domain using the
+            <br>current user or machine's credentials.</br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.AuthType">
+            <summary>
+            Class property holding a <see cref="T:System.DirectoryServices.Protocols.AuthType"/> <see langword="enum"/> value specifying the authentication method to use.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.EncryptConnection">
+            <summary>
+            Class property holding a <see langword="bool" /> value indicating whether to use encryption for the LDAP connection.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.Domain">
+            <summary>
+            Class property holding a <see langword="string" /> value of the AD/LDAP domain to connect to.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.DomainController">
+            <summary>
+            Class property holding a <see langword="string" /> value of a specific Domain Controller to connect to if desired, instead of attempting
+            <br>a connection to the domain itself using the value in <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.Domain"/>.</br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.Port">
+            <summary>
+            Class property holding an <see langword="int" /> value of the port to use when connecting to the AD Domain/Domain Controller.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.BaseDN">
+            <summary>
+            Class property holding a <see langword="string" /> value of the Base DN that will be searched for users.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.SearchFilter">
+            <summary>
+            Class property holding a <see langword="string" /> value of the LDAP search filter to use when searching for users.
+            <br>This value MUST contain the string <c>(sAMAccountName=KeysCmdUsernameHere)</c> somewhere within the search filter.</br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.SearchScope">
+            <summary>
+            Class property holding a <see cref="T:System.DirectoryServices.Protocols.SearchScope"/> <see langword="enum"/> value specifying the search scope
+            <br>relative to the Base DN value held in <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.BaseDN"/></br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot.SSHKeyAttribute">
+            <summary>
+            Class property holding a <see langword="string" /> value of the name of the AD object attribute which holds the user's ssh public key information.
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot">
+            <summary>
+            Container class for logging-related settings.
+            <br>Members:</br>
+            <list type="bullet">
+            <item><see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.Enabled"/></item>
+            <item><see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.LogDirectory"/></item>
+            <item><see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.LogFilename"/></item>
+            <item><see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.TimestampFormat"/></item>
+            <item><see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.UTC"/></item>
+            <item><see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.MinimumLogLevel"/></item>
+            </list>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.Enabled">
+            <summary>
+            Class property holding a <see langword="bool" /> value indicating whether logging is enabled.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.LogDirectory">
+            <summary>
+            Class property holding a <see langword="string" /> value of the directory where log files will be stored.
+            <br><b>NOTE:</b> The value of this property is relative to the "KeysCmd" binary executable file itself.</br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.LogFilename">
+            <summary>
+            Class property holding a <see langword="string" /> value of the filename to which logs will be written.
+            <br>This file will be stored inside the directory specified in <see cref="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.LogDirectory"/></br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.TimestampFormat">
+            <summary>
+            Class property holding a <see langword="string" /> value of the timestamp format to use in the log file and console.
+            <br>The timestamp format is a standard .NET DateTime format string.</br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.UTC">
+            <summary>
+            Class property holding a <see langword="bool" /> value indicating whether to use the UTC timezone for timestamps.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot.MinimumLogLevel">
+            <summary>
+            Class property holding a <see cref="T:Microsoft.Extensions.Logging.LogLevel"/> <see langword="enum"/> value specifying the minimum
+            <br>LogLevel that will be logged to the logfile and/or console. Log messages with a LogLevel below this</br>
+            <br>minimum level will be discarded.</br>
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.Configuration">
+            <summary>
+            Class that holds configuration data like platform information, a <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition"/> object of the default
+            <br>config file, a <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition"/> object of the running configuration (merge of config file</br>
+            <br>on disk + dynamic runtime settings), etc.</br>
+            <br></br>
+            <br>Contains the following methods:</br>
+            <list type="bullet">
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.Configuration.Init" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.Configuration.ParseConnectionInfo" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.Configuration.LoadConfig" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.Configuration.SaveConfig" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.Configuration.GetDefaultConfig" /></item>
+            </list>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._builtinSpecialAccounts">
+            <summary>
+            A <see langword="string"/>[] of built-in special accounts that are used to determine the default configuration and logging location.
+            <br>If the program determines that it's running as one of these accounts, config/logs will be saved to <c>C:\ProgramData\keyscmd</c></br>
+            <br>on Windows, and <c>/etc/keyscmd</c> on Linux.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._whoAmI">
+            <summary>
+            Holds a <see cref="T:System.String"/> that contains the username of the executing user.
+            <br>If launched by OpenSSH on Windows to retrieve ssh keys, this will probably be NT AUTHORITY\System</br>
+            <seealso cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._builtinSpecialAccounts"/>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._creationTime">
+            <summary>
+            Holds the date and time that the <see cref="T:RosettaTools.CLI.KeysCmd.Common.Configuration"/> object was instantiated.
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._configHome">
+            <summary>
+            A <see cref="T:System.String"/> that contains the path to the directory holding the application JSON configuration file.
+            <br>The order of preference is:</br>
+            <list type="number">
+            <item>A configuration file placed in the same directory as the executable</item>
+            <item><c>C:\ProgramData\keyscmd</c> on Windows, and <c>/etc/keyscmd</c> on Linux
+            <br>(Caveat: This is the #1 preference when launched as a user in the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._builtinSpecialAccounts"/> array.)</br></item>
+            <item>The directory listed in the <c>XDG_HOME</c> environment variable (Linux or Windows)</item>
+            <item><c>$ENV:APPDATA\keyscmd</c> on Windows, or <c>~/.config/keyscmd</c> on Linux</item>
+            </list>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._defaultConfigFilename">
+            <summary>
+            A <see cref="T:System.String"/> containing the filename of the application config. This file will reside in the directory
+            <b>listed in the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._configHome"/> variable.</b>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._defaultConfigFile">
+            <summary>
+            A <see cref="T:System.String"/> representation of the actual content of the JSON configuration file.
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._logPath">
+            <summary>
+            A <see cref="T:System.String"/> listing the directory where logs will be stored.<br></br>
+            <br><c><b>NOTE:</b></c> This path is relative to the <c>KeysCmd</c> executable file, it is not an absolute path.</br>
+            <br>I will most likely add an option later to allow this to be interpreted as an absolute path, it's just not high</br>
+            <br>on my priority list right now.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._defaultConfig">
+            <summary>
+            A strongly-typed <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.ConfigRoot"/> representation of the default configuration values.
+            <br>If the config file does not exist, a new config file is created by serializing this object and writing it out to disk.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._runningConfig">
+            <summary>
+            A strongly-typed <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.ConfigRoot"/> representation of the configuration loaded from disk, and any
+            <br>other runtime modifications that may have been made along the way. This object is deserialized and written to disk</br>
+            <br>as the JSON configuration file.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._isWindows">
+            <summary>
+            A <see cref="T:System.Boolean"/> value that evaluates to <c>true</c> if the host operating system is Windows.
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._isLinux">
+            <summary>
+            A <see cref="T:System.Boolean"/> value that evaluates to <c>true</c> if the host operating system is Linux.
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Configuration._os">
+            <summary>
+            A <see cref="T:System.String"/> containing the name of the operating system. Currently unused.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.CreationTime">
+            <summary>
+            A <see cref="T:System.DateTime"/> public property backed by the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._creationTime"/> class variable.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.DefaultConfig">
+            <summary>
+            A <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.ConfigRoot"/> public property backed by the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._defaultConfig"/> class variable.
+            <br>If this property is accessed before <c>_defaultConfig</c> is initialized, it calls <see cref="M:RosettaTools.CLI.KeysCmd.Common.Configuration.GetDefaultConfig"/></br>
+            <br>to populate the class variable and avoid a null dereference.</br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.RunningConfig">
+            <summary>
+            A public property backed by the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._runningConfig"/> class variable, which holds the running configuration.
+            <br>Like <c>DefaultConfig</c>, this property initializes its corresponding class variable by calling <see cref="M:RosettaTools.CLI.KeysCmd.Common.Configuration.GetDefaultConfig"/></br>
+            <br>to avoid a null dereference.</br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.LoggingConfig">
+            <summary>
+            A convenience property that returns the <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot"/> object from the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._runningConfig"/> object.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.DomainInfo">
+            <summary>
+            A convenience property that returns the <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot"/> object from the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._runningConfig"/> object.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.WhoAmI">
+            <summary>
+            Public property that returns the username of the executing user. Backed by the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._whoAmI"/> class variable.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.ConfigHome">
+            <summary>
+            Public property that returns the path to the configuration directory. Backed by the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._configHome"/> class variable.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.DefaultConfigFilename">
+            <summary>
+            Public property that returns the filename of the default configuration file. Backed by the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._defaultConfigFilename"/> class variable.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.DefaultConfigFile">
+            <summary>
+            Public property that returns a <see cref="T:System.String"/> representation of the default configuration file. Backed by the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._defaultConfigFile"/> class variable.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.Domains">
+            <summary>
+            A convenience property that returns an array of domain names from the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._runningConfig"/> object.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.UsernameRegex">
+            <summary>
+            A convenience property that returns the username regex from the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._runningConfig"/> object.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.SSHKeyAttribute">
+            <summary>
+            A convenience property that returns the SSH key attribute from the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._runningConfig"/> object.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.LoggingEnabled">
+            <summary>
+            A convenience property that returns whether logging is enabled or not. The value is pulled from the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._runningConfig"/> object.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.LogPath">
+            <summary>
+            A convenience property that returns the path where logs are stored. The value is pulled from the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._logPath"/> class variable.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.IsWindows">
+            <summary>
+            A convenience property that evaluates to <c>true</c> if the host operating system is Windows. Backed by the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._isWindows"/> class variable.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.IsLinux">
+            <summary>
+            A convenience property that evaluates to <c>true</c> if the host operating system is Linux. Backed by the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._isLinux"/> class variable.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Common.Configuration.OS">
+            <summary>
+            A useless convenience property that returns the name of the operating system. Currently unused.
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.Configuration.#ctor">
+            <summary>
+            <see cref="T:RosettaTools.CLI.KeysCmd.Common.Configuration"/> default constructor.
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.Configuration.Init">
+            <summary>
+            A method to do shit that we may not want to do in a constructor.
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.Configuration.ParseConnectionInfo">
+            <summary>
+            The wall of assignments in this method is fucking ugly, but it's the quickest way to do data validation on what
+            <br>is inherently untrusted data read from the config file.</br>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.Configuration.LoadConfig">
+            <summary>
+            Loads the configuration file from disk and deserializes it into a strongly-typed <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.ConfigRoot"/> object.
+            <br>If the config file does not exist, a default configuration is written out to disk, then read back in to the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._defaultConfig"/></br>
+            <br>variable. This is to ensure that the config location is accessible/can be written to.</br>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.Configuration.SaveConfig">
+            <summary>
+            Saves the current configuration to disk by serializing the <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._runningConfig"/> object and writing it to the
+            <br>config file location stored in <see cref="F:RosettaTools.CLI.KeysCmd.Common.Configuration._configHome"/></br>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.Configuration.GetDefaultConfig">
+            <summary>
+            Returns a <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.ConfigRoot"/> object instantiated with the default config values.
+            </summary>
+            <returns>The <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.ConfigRoot"/></returns>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ShortLogLevel">
+            <summary>
+            These directly map to their corresponding log levels in the <see cref="N:Microsoft.Extensions.Logging"/> namespace.
+            <br>They're just shortened versions of the same name for the file logger.</br>
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions">
+            <summary>
+            Class containing extension methods for the <see cref="T:System.DateTime"/> class.
+            <br></br>
+            <br>Contains the following methods:</br>
+            <list type="bullet">
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToISO8601(System.DateTime)" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToISO8601WithMs(System.DateTime)" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToISO8601WithTZ(System.DateTime)" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToISO8601TZWithTZMs(System.DateTime)" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToRFC1123(System.DateTime)" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToSortable(System.DateTime)" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToUniversalSortable(System.DateTime)" /></item>
+            </list>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToISO8601(System.DateTime)">
+            <summary>
+            Convenience method to convert a <see cref="T:System.DateTime"/> object to a <see cref="T:System.String"/> in ISO8601 format.
+            </summary>
+            <param name="dt">The <see cref="T:System.DateTime"/> object to format.</param>
+            <returns><see cref="T:System.String"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToISO8601WithMs(System.DateTime)">
+            <summary>
+            Convenience method to convert a <see cref="T:System.DateTime"/> object to a <see cref="T:System.String"/> in ISO8601 format, with milliseconds.
+            </summary>
+            <param name="dt">The <see cref="T:System.DateTime"/> object to format.</param>
+            <returns><see cref="T:System.String"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToISO8601WithTZ(System.DateTime)">
+            <summary>
+            Convenience method to convert a <see cref="T:System.DateTime"/> object to a <see cref="T:System.String"/> in ISO8601 format, with time zone.
+            </summary>
+            <param name="dt">The <see cref="T:System.DateTime"/> object to format.</param>
+            <returns><see cref="T:System.String"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToISO8601TZWithTZMs(System.DateTime)">
+            <summary>
+            Convenience method to convert a <see cref="T:System.DateTime"/> object to a <see cref="T:System.String"/> in ISO8601 format, with time zone and milliseconds.
+            </summary>
+            <param name="dt">The <see cref="T:System.DateTime"/> object to format.</param>
+            <returns><see cref="T:System.String"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToRFC1123(System.DateTime)">
+            <summary>
+            Convenience method to convert a <see cref="T:System.DateTime"/> object to a <see cref="T:System.String"/> in RFC1123 format.
+            </summary>
+            <param name="dt">The <see cref="T:System.DateTime"/> object to format.</param>
+            <returns><see cref="T:System.String"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToSortable(System.DateTime)">
+            <summary>
+            Convenience method to convert a <see cref="T:System.DateTime"/> object to a <see cref="T:System.String"/> in a sortable format.
+            </summary>
+            <param name="dt">The <see cref="T:System.DateTime"/> object to format.</param>
+            <returns><see cref="T:System.String"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.DateTimeExtensions.ToUniversalSortable(System.DateTime)">
+            <summary>
+            Convenience method to convert a <see cref="T:System.DateTime"/> object to a <see cref="T:System.String"/> in a universal sortable format.
+            </summary>
+            <param name="dt">The <see cref="T:System.DateTime"/> object to format.</param>
+            <returns><see cref="T:System.String"/></returns>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions">
+            <summary>
+            Class containing extension methods for <see cref="T:Microsoft.Extensions.Logging.ILogger"/>. Calling one of the
+            <br>methods in this class will auto-populate the log message with the calling method's</br>
+            <br>name, as well as applying some light markup to make log items more easily-distinguishable.</br>
+            <br>Otherwise identical to the stock <c>ILogger</c> methods.</br>
+            <br></br>
+            <br>Contains the following methods:</br>
+            <list type="bullet">
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogDebug(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogTrace(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogInformation(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogWarning(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogError(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogCritical(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLog(Microsoft.Extensions.Logging.ILogger,Microsoft.Extensions.Logging.LogLevel,System.String,System.String,System.Object[])" /></item>
+            </list>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogDebug(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])">
+            <summary>
+            Logs a message at the <see cref="F:Microsoft.Extensions.Logging.LogLevel.Debug"/> level with the calling method's name prepended to the message.
+            </summary>
+            <param name="logger">The current <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance that this method is being called on. Auto-populated.</param>
+            <param name="message">A <see cref="T:System.String"/>? representing the message to be logged.</param>
+            <param name="caller">A <see cref="T:System.String"/>? containing the name of the method that called this log method. Auto-populated.</param>
+            <param name="args">An <see cref="T:System.Object"/>?[] array containing any remaining arguments for the <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance, such as
+            <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogTrace(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])">
+            <summary>
+            Logs a message at the <see cref="F:Microsoft.Extensions.Logging.LogLevel.Trace"/> level with the calling method's name prepended to the message.
+            </summary>
+            <param name="logger">The current <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance that this method is being called on. Auto-populated.</param>
+            <param name="message">A <see cref="T:System.String"/>? representing the message to be logged.</param>
+            <param name="caller">A <see cref="T:System.String"/>? containing the name of the method that called this log method. Auto-populated.</param>
+            <param name="args">An <see cref="T:System.Object"/>?[] array containing any remaining arguments for the <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance, such as
+            <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogInformation(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])">
+            <summary>
+            Logs a message at the <see cref="F:Microsoft.Extensions.Logging.LogLevel.Information"/> level with the calling method's name prepended to the message.
+            </summary>
+            <param name="logger">The current <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance that this method is being called on. Auto-populated.</param>
+            <param name="message">A <see cref="T:System.String"/>? representing the message to be logged.</param>
+            <param name="caller">A <see cref="T:System.String"/>? containing the name of the method that called this log method. Auto-populated.</param>
+            <param name="args">An <see cref="T:System.Object"/>?[] array containing any remaining arguments for the <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance, such as
+            <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogWarning(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])">
+            <summary>
+            Logs a message at the <see cref="F:Microsoft.Extensions.Logging.LogLevel.Warning"/> level with the calling method's name prepended to the message.
+            </summary>
+            <param name="logger">The current <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance that this method is being called on. Auto-populated.</param>
+            <param name="message">A <see cref="T:System.String"/>? representing the message to be logged.</param>
+            <param name="caller">A <see cref="T:System.String"/>? containing the name of the method that called this log method. Auto-populated.</param>
+            <param name="args">An <see cref="T:System.Object"/>?[] array containing any remaining arguments for the <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance, such as
+            <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogError(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])">
+            <summary>
+            Logs a message at the <see cref="F:Microsoft.Extensions.Logging.LogLevel.Error"/> level with the calling method's name prepended to the message.
+            </summary>
+            <param name="logger">The current <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance that this method is being called on. Auto-populated.</param>
+            <param name="message">A <see cref="T:System.String"/>? representing the message to be logged.</param>
+            <param name="caller">A <see cref="T:System.String"/>? containing the name of the method that called this log method. Auto-populated.</param>
+            <param name="args">An <see cref="T:System.Object"/>?[] array containing any remaining arguments for the <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance, such as
+            <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLogCritical(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])">
+            <summary>
+            Logs a message at the <see cref="F:Microsoft.Extensions.Logging.LogLevel.Critical"/> level with the calling method's name prepended to the message.
+            </summary>
+            <param name="logger">The current <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance that this method is being called on. Auto-populated.</param>
+            <param name="message">A <see cref="T:System.String"/>? representing the message to be logged.</param>
+            <param name="caller">A <see cref="T:System.String"/>? containing the name of the method that called this log method. Auto-populated.</param>
+            <param name="args">An <see cref="T:System.Object"/>?[] array containing any remaining arguments for the <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance, such as
+            <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ILoggerExtensions.CLog(Microsoft.Extensions.Logging.ILogger,Microsoft.Extensions.Logging.LogLevel,System.String,System.String,System.Object[])">
+            <summary>
+            Logs a message at the specified <see cref="T:Microsoft.Extensions.Logging.LogLevel"/> with the calling method's name prepended to the message.
+            </summary>
+            <param name="logger">The current <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance that this method is being called on. Auto-populated.</param>
+            <param name="logLevel">The <see cref="T:Microsoft.Extensions.Logging.LogLevel"/> of the incoming message. If the <c>LogLevel</c> is less than the configured-minimum LogLevel, the message is discarded.</param>
+            <param name="message">A <see cref="T:System.String"/>? representing the message to be logged.</param>
+            <param name="caller">A <see cref="T:System.String"/>? containing the name of the method that called this log method. Auto-populated.</param>
+            <param name="args">An <see cref="T:System.Object"/>?[] array containing any remaining arguments for the <see cref="T:Microsoft.Extensions.Logging.ILogger"/> instance, such as
+            <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.MethodExtensions">
+            <summary>
+            All extension methods in this class are currently unused. They are here for
+            <br>potential use in the future.</br>
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.ObjectExtensions">
+            <summary>
+            All extension methods in this class are currently unused. They are here for
+            <br>potential use in the future.</br>
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.StringExtensions">
+            <summary>
+            All extension methods in this class except <see cref="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.StringExtensions.ToFormattableStringArray(System.String)"/> are currently unused. They are here for
+            <br>potential use in the future.</br>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.ExtensionMethods.StringExtensions.ToFormattableStringArray(System.String)">
+            <summary>
+            A method that takes ingests a <see langword="string"/> and returns a <see langword="string"/>[] array.
+            <br>The input <see langword="string"/> <c>str</c> is split into individual strings using the "Space" character as the delimiter.</br>
+            <br></br>
+            <br>This method exists because of the <see cref="M:Spectre.Console.Cli.IConfigurator.AddExample(System.String[])"/> method.</br>
+            <br>The <c>AddExample</c> method takes a <see cref="T:System.String"/>[] array as input, not a single <see langword="string"/>.</br>
+            <br>There is <c><b><u><i>less than zero fucking probability</i></u></b></c> that I'm going to manually maintain that with proper</br>
+            <br>examples, so I wrote this extension method to save my time and sanity.</br>
+            </summary>
+            <param name="SomeParameter">An instace of <see cref="!:SomeCSharpType"/> object used to do some stuff</param>
+            <returns><see cref="!:SomeOtherCSharpType"/></returns>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Common.Utilities">
+            <summary>
+            General utility catchall/garbage can for methods and other shit that don't fit anywhere else.
+            <br></br>
+            <br>Contains the following methods:</br>
+            <list type="bullet">
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Common.Utilities.FormatCaller(System.String)" /></item>
+            </list>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Common.Utilities.NULLCHAR">
+            <summary>
+            <see langword="internal static readonly char" /> class variable holding the value of
+            <br>the ASCII NULL character. Written to stdout as an indicator to OpenSSH that the</br>
+            <br>key listing is finished.</br>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Common.Utilities.FormatCaller(System.String)">
+            <summary>
+            A method that returns a <see cref="N:Spectre.Console"/>-formatted <see cref="T:System.String"/> containing the name of the calling method.
+            </summary>
+            <param name="caller">A <see langword="string"/> which contains the name of the calling method.
+            <br>This parameter is automatically populated by the compiler, there shouldn't ever be a need to manually specify it.</br></param>
+            <returns><see cref="T:System.String"/></returns>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper">
+            <summary>
+            A helper class for interacting with LDAP/AD servers. Contains methods for connecting to an
+            <br>LDAP/AD Domain, verifying that the requested user object is valid, and retrieving the</br>
+            <br>user's SSH public keys (if they exist) from the AD attribute as defined by the <c>SSHKeyAttribute</c></br>
+            <br>configuration option (defaults to <c>altSecurityIdentities</c>).</br>
+            <br></br>
+            <br>Contains the following methods:</br>
+            <list type="bullet">
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetLDAPConnection" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetADUser(System.DirectoryServices.Protocols.LdapConnection)" /></item>
+            <item><see cref="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetADUserSSHKeys(System.DirectoryServices.Protocols.LdapConnection)" /></item>
+            </list>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper._logger">
+            <summary>
+            A DI instance-specific <see cref="T:Microsoft.Extensions.Logging.ILogger"/> object.
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper._config">
+            <summary>
+            A class variable containing an instantiated <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.ConfigRoot"/> object via
+            <br>a DI <see cref="T:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration"/> interface.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.bindCredential">
+            <summary>
+            A <see cref="T:System.Net.NetworkCredential"/> object containing the LDAP/AD binding credentials.
+            <br>This may or may not be populated depending on the authentication type.</br>
+            <br>It is always used when connecting from a Linux host.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.connectHostname">
+            <summary>
+            A <see langword="string"/> containing the hostname and/or Domain name of the LDAP/AD Domain to connect to.<br></br>
+            <br>Its value will vary depending on the settings in the config file, but it will always contain the value</br>
+            <br>of one of the following:</br>
+            <list type="bullet">
+            <item>A shortened NETBIOS Domain name</item>
+            <item>A fully-qualified Domain name</item>
+            <item>A shortened hostname of a Domain Controller</item>
+            <item>An FQDN of a Domain Controller</item>
+            <item>An IP address of a Domain Controller (don't do this, it breaks encryption)</item>
+            </list>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.bindUser">
+            <summary>
+            A <see langword="string"/> containing the fully-qualified LDAP Distinguished Name (DN) of the user
+            <br>to bind to the LDAP/AD Domain with. This may or may not be populated depending</br>
+            <br>on the authentication type. It is always used when connecting from a Linux host, and</br>
+            <br>its value is read from the <c>KEYSCMD_USER</c> environment variable.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.bindPassword">
+            <summary>
+            A <see langword="string"/> containing the password for the user specified in <see cref="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.bindUser"/>
+            <br>This may or may not be populated depending on the authentication type.</br>
+            <br>It is always used when connecting from a Linux host, and its value is</br>
+            <br>read from the <c>KEYSCMD_PASSWORD</c> environment variable.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.bindDomain">
+            <summary>
+            A <see langword="string"/> containing the NETBIOS or FQDN of the Domain to bind to.
+            <br>This may or may not be populated depending on the authentication type.</br>
+            <br>It is always used when connecting from a Linux host, and its value is</br>
+            <br>read from the <c>KEYSCMD_DOMAIN</c> environment variable or the config file.</br>
+            <br></br>
+            <br>If the Domain is specified in both the config file and an environment variable, the</br>
+            <br>value set in the environment variable takes precedence.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.ldapConnection">
+            <summary>
+            Holds the built <see cref="T:System.DirectoryServices.Protocols.LdapConnection"/> object used to connect to the LDAP/AD Domain
+            <br>and retrieve the user's ssh public keys.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.ldapID">
+            <summary>
+            An instantiated <see cref="T:System.DirectoryServices.Protocols.LdapDirectoryIdentifier"/> object with connection information
+            <br>used to construct the <see cref="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.ldapConnection"/> object.</br>
+            </summary>
+        </member>
+        <member name="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.authType">
+            <summary>
+            An <see cref="T:System.DirectoryServices.Protocols.AuthType"/> enum value representing the authentication type to use when binding
+            <br>to the LDAP/AD Domain. The default is <see cref="F:System.DirectoryServices.Protocols.AuthType.Negotiate"/> on Windows hosts, and </br>
+            <br><see cref="F:System.DirectoryServices.Protocols.AuthType.Basic"/> on Linux hosts. The <c>Negotiate</c> authentication method may fail on</br>
+            <br>a Linux host, so the default authentication method for Linux is <see cref="F:System.DirectoryServices.Protocols.AuthType.Basic"/>.</br>
+            <br>In any case, regardless of the authentication type, the connection is encrypted by default</br>
+            <br>using implicit TLS on port <see langword="389"/> and explicit TLS on port <see langword="636"/>.</br>
+            <br></br><br><b><i>Don't turn off encryption</i></b> if you have to change the auth type.</br>
+            <br>Will it work over plain text on port 389? Yes. Yes, it will work. Should you do it? <b><i>Fuck no.</i></b></br>
+            <br><i>Absolutely fucking not.</i></br> Trying port <see langword="636"/> with <c>Basic</c> authentication will <i>almost certainly</i> work
+            <br>unless your PKI infrastructure is super fucked or you're using an IP address instead of a</br>
+            <br>shortened hostname, FQDN, or Domain name.</br>
+            <br><br></br>Work your shit out and <b><i>Don't turn off encryption.</i></b></br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.Config">
+            <summary>
+            A convenience class property for the <see cref="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper._config"/> class variable.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.connectionInfo">
+            <summary>
+            A convenience property pointing to the <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot.ConnectionInfoRoot"/> node of the running config.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.LDAPLogger">
+            <summary>
+            A convenience property pointing to the instance-specific DI <see cref="T:Microsoft.Extensions.Logging.ILogger"/>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.#ctor">
+            <summary>
+            A useless default constructor, and I forgot why I put it here. I should just remove it, but
+            <br>I just documented it, so it's going to be here to stay for at least a few commits to</br>
+            <br>justify the time I just wasted writing out this documentation block for it.</br>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.#ctor(Microsoft.Extensions.Logging.ILogger{RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper},RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper"/> class with injected dependencies.
+            <br>This class is registered as a Singleton managed by the .NET generic host and <see cref="N:Spectre.Console.Cli"/> app</br>
+            <br>and isn't meant to be manually instantiated.</br>
+            </summary>
+            <param name="logger">The DI instance-specific <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> object.</param>
+            <param name="config">A DI <see cref="T:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration"/> object which populates the <see cref="F:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper._config"/> class variable.</param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetLDAPConnection">
+            <summary>
+            A method to establish a connection to an LDAP/AD Domain using the settings in the config file, or
+            <br>default/best effort/best guess settings if config settings are incorrect, mangled, or <c>null</c>.</br>
+            <br><br></br>This method takes no parameters.</br>
+            </summary>
+            <returns><see cref="T:System.DirectoryServices.Protocols.LdapConnection"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetADUser(System.DirectoryServices.Protocols.LdapConnection)">
+            <summary>
+            A method to search for a user in the LDAP/AD Domain using the connection established by <see cref="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetLDAPConnection" />
+            <br>This method does not retrieve the user's ssh public keys; its sole purpose in life is to verify that</br>
+            <br>the user is a valid LDAP/AD user.</br>
+            </summary>
+            <param name="ldapConnection">An instance of an <see cref="T:System.DirectoryServices.Protocols.LdapConnection"/> object, which is constructed
+            <br>by the <see cref="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetLDAPConnection"/> method.</br></param>
+            <returns><see cref="T:System.DirectoryServices.Protocols.SearchResponse"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetADUserSSHKeys(System.DirectoryServices.Protocols.LdapConnection)">
+            <summary>
+            A method to retrieve ssh public keys from LDAP/AD for a given user, using the connection established
+            <br>by <see cref="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetLDAPConnection" />. It returns a <see cref="T:System.DirectoryServices.Protocols.SearchResponse"/> object, not the keys themselves.</br>
+            <br></br><br>The actual keys are raw byte arrays held in an attribute of the <c>SearchResponse</c> object and are</br>
+            <br>converted, parsed, and written to stdout by the <c>Execute</c> method of the <c>GetKeysCommand</c> class.</br>
+            </summary>
+            <param name="ldapConnection">An instance of an <see cref="T:System.DirectoryServices.Protocols.LdapConnection"/> object, which is constructed
+            <br>by the <see cref="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetLDAPConnection"/> method.</br></param>
+            <returns><see cref="T:System.DirectoryServices.Protocols.SearchResponse"/></returns>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Interfaces.IFileLogger">
+            <summary>
+            Interface for the <see cref="T:RosettaTools.CLI.KeysCmd.Logging.FileLogger"/> class, a custom
+            <br><see cref="T:Microsoft.Extensions.Logging.ILogger"/> implementation that logs to a file since</br>
+            <br>that functionality is not provided by the default <see cref="T:Microsoft.Extensions.Logging.ILogger"/></br>
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Interfaces.IFileLogger.BeginScope``1(``0)">
+            <summary>
+            Begins a logical operation scope.
+            </summary>
+            <typeparam name="TState">The type of the state to associate with the scope.</typeparam>
+            <param name="state">The identifier for the scope.</param>
+            <returns>An <see cref="T:System.IDisposable"/> that ends the logical operation scope on dispose.</returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Interfaces.IFileLogger.IsEnabled(Microsoft.Extensions.Logging.LogLevel)">
+            <summary>
+            Checks if the given <see cref="T:Microsoft.Extensions.Logging.LogLevel"/> is enabled.
+            </summary>
+            <param name="logLevel">Level to be checked.</param>
+            <returns><c>true</c> if enabled; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Interfaces.IFileLogger.Log``1(Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,``0,System.Exception,System.Func{``0,System.Exception,System.String})">
+            <summary>
+            Writes a log entry.
+            </summary>
+            <typeparam name="TState">The type of the object to be written.</typeparam>
+            <param name="logLevel">Entry will be written on this level.</param>
+            <param name="eventId">Id of the event.</param>
+            <param name="state">The entry to be written. Can be also an object.</param>
+            <param name="exception">The exception related to this entry.</param>
+            <param name="formatter">Function to create a <see cref="T:System.String"/> message of the state and exception.</param>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Interfaces.IFileLogILogProvider">
+            <summary>
+            An interface for the FileLogILogProvider.
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Interfaces.IFileLogILogProvider.CreateLogger(System.String)">
+            <summary>
+            Creates a logger with the specified category name.
+            </summary>
+            <param name="categoryName">The category name for the logger.</param>
+            <returns>An instance of <see cref="T:Microsoft.Extensions.Logging.ILogger"/>.</returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Interfaces.IFileLogILogProvider.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration">
+            <summary>
+            Interface for Keys Command Configuration.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.CreationTime">
+            <summary>
+            Gets the creation time of the underlying Configuration object.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.DefaultConfig">
+            <summary>
+            Gets the default configuration.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.LoggingEnabled">
+            <summary>
+            Gets or sets a value indicating whether logging is enabled.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.RunningConfig">
+            <summary>
+            Gets the running configuration.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.LoggingConfig">
+            <summary>
+            Gets the <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.LoggingRoot"/> configuration node.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.DomainInfo">
+            <summary>
+            Gets the <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot"/> configuration node.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.ConfigHome">
+            <summary>
+            Gets the path to the JSON configuration file.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.IsLinux">
+            <summary>
+            Evaluates to "true" if the host operating system is Linux.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.DefaultConfigFile">
+            <summary>
+            Gets the <see langword="string"/> representation of the JSON configuration file.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.DefaultConfigFilename">
+            <summary>
+            Gets the default configuration filename.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.Domains">
+            <summary>
+            A <see cref="T:System.String"/>[] array of valid AD domains to match against.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.IsWindows">
+            <summary>
+            Evaluates to "true" if the host operating system is Windows.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.LogPath">
+            <summary>
+            Gets or sets the path where logfiles are stored.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.OS">
+            <summary>
+            A useless property that does nothing for right now.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.SSHKeyAttribute">
+            <summary>
+            Gets the configured AD attribute that contains the user's SSH key.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.UsernameRegex">
+            <summary>
+            The regex pattern to match against when an ssh public key retrieval request is received.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration.WhoAmI">
+            <summary>
+            Contains the name of the user running the application, used for debugging and some configuration settings.
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.Interfaces.ILDAPHelper">
+            <summary>
+            Interface for LDAP helper functions.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.Interfaces.ILDAPHelper.LDAPLogger">
+            <summary>
+            Gets the DI instance-specific logger for the <see cref="T:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper"/> class
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Interfaces.ILDAPHelper.GetADUser(System.DirectoryServices.Protocols.LdapConnection)">
+            <summary>
+            A method that ensures the requested user is a valid user in Active Directory.
+            </summary>
+            <param name="ldapConnection">The LDAP connection to use when searching</param>
+            <returns><see cref="T:System.DirectoryServices.Protocols.SearchResponse"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Interfaces.ILDAPHelper.GetADUserSSHKeys(System.DirectoryServices.Protocols.LdapConnection)">
+            <summary>
+            Retrieves the SSH public keys of an Active Directory user.
+            </summary>
+            <param name="ldapConnection">The LDAP connection to use when searching</param>
+            <returns><see cref="T:System.DirectoryServices.Protocols.SearchResponse"/></returns>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.Interfaces.ILDAPHelper.GetLDAPConnection">
+            <summary>
+            Establishes a connection to the LDAP/AD Domain
+            </summary>
+            <returns><see cref="T:System.DirectoryServices.Protocols.LdapConnection"/></returns>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysCommand">
+            <summary>
+            Command implementation for retrieving SSH public keys from Active Directory.
+            This command handles the actual retrieval of keys and supports both interactive and OpenSSH-compatible output modes.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysCommand.LDAPHelper">
+            <summary>
+            The LDAP helper instance used for AD operations.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysCommand.Config">
+            <summary>
+            Gets or sets the configuration instance.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysCommand.DomainInfo">
+            <summary>
+            Convenience property that gets the <see cref="T:RosettaTools.CLI.KeysCmd.Common.ConfigDefinition.DomainInfoRoot"/> node from configuration.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysCommand.GetKeysLogger">
+            <summary>
+            Gets the logger instance for this command.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysCommand.LDAPConnection">
+            <summary>
+            Gets or sets the LDAP connection used for AD operations.
+            <br>This will normally be set by <see cref="M:RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper.GetLDAPConnection"/></br>
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysCommand.KeysArray">
+            <summary>
+            Gets or sets the array of retrieved SSH keys.
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysCommand.#ctor(Microsoft.Extensions.Logging.ILogger{RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysCommand},Microsoft.Extensions.Logging.ILogger{RosettaTools.CLI.KeysCmd.Helpers.LDAPHelper},RosettaTools.CLI.KeysCmd.Interfaces.IKeysCmdConfiguration,RosettaTools.CLI.KeysCmd.Interfaces.ILDAPHelper)">
+            <summary>
+            Initializes a new instance of the GetKeysCommand class with required dependencies.
+            <br>This is handled by the .NET generic host and <see cref="N:Spectre.Console.Cli"/></br>
+            </summary>
+            <param name="logger">Logger for this command instance.</param>
+            <param name="ldapLogger">Logger for LDAP operations.</param>
+            <param name="config">Application configuration.</param>
+            <param name="ldapHelper">Helper for LDAP operations.</param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysCommand.Execute(Spectre.Console.Cli.CommandContext,RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysSettings)">
+            <summary>
+            Executes the command to retrieve SSH keys for a specified user.
+            </summary>
+            <param name="context">The command context, provided by <see cref="N:Spectre.Console.Cli"/></param>
+            <param name="settings">The command settings containing user and options, provided by <see cref="N:Spectre.Console.Cli"/></param>
+            <returns>0 for success, non-zero for various error conditions.</returns>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.SpectreCLI.TypeRegistrar">
+            <summary>
+            Implements type registration for dependency injection in the Spectre.Console CLI framework.
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.SpectreCLI.TypeRegistrar.#ctor(Microsoft.Extensions.Hosting.IHostBuilder)">
+            <summary>
+            Initializes a new instance of the TypeRegistrar class.
+            </summary>
+            <param name="builder">The host builder to use for service registration.</param>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.SpectreCLI.TypeResolver">
+            <summary>
+            Implements type resolution for dependency injection in the Spectre.Console CLI framework.
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.SpectreCLI.TypeResolver.#ctor(Microsoft.Extensions.Hosting.IHost)">
+            <summary>
+            Initializes a new instance of the TypeResolver class.
+            </summary>
+            <param name="provider">The host that provides the service provider.</param>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.SpectreCLI.BaseInterceptor">
+            <summary>
+            Base command interceptor that handles common pre and post-command execution tasks.
+            <br></br>
+            Primary responsibility is acting as a failsafe for console output behavior based on OpenSSH compatibility mode.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.SpectreCLI.BaseInterceptor.Logger">
+            <summary>
+            Gets the logger instance for this interceptor.
+            </summary>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.SpectreCLI.BaseInterceptor.#ctor(Microsoft.Extensions.Logging.ILogger{RosettaTools.CLI.KeysCmd.SpectreCLI.BaseInterceptor})">
+            <summary>
+            Initializes a new instance of the BaseInterceptor class.
+            <br>This is handled by <see cref="N:Spectre.Console.Cli"/></br>
+            </summary>
+            <param name="logger">Logger for this interceptor instance.</param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.SpectreCLI.BaseInterceptor.Intercept(Spectre.Console.Cli.CommandContext,Spectre.Console.Cli.CommandSettings)">
+            <summary>
+            The safety net to ensure OpenSSH doesn't get fed bad data.
+            </summary>
+            <param name="context">The command context.</param>
+            <param name="settings">The command settings.</param>
+        </member>
+        <member name="M:RosettaTools.CLI.KeysCmd.SpectreCLI.BaseInterceptor.InterceptResult(Spectre.Console.Cli.CommandContext,Spectre.Console.Cli.CommandSettings,System.Int32@)">
+            <summary>
+            Intercepts command result before returning to caller.
+            Currently not implemented.
+            </summary>
+            <param name="context">The command context.</param>
+            <param name="settings">The command settings.</param>
+            <param name="result">The command result code.</param>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.SpectreCLI.ConfigSettings">
+            <summary>
+            Settings class for configuration-related commands.
+            Used by <see cref="T:RosettaTools.CLI.KeysCmd.SpectreCLI.ShowConfigCommand"/> and <see cref="T:RosettaTools.CLI.KeysCmd.SpectreCLI.EditConfigCommand"/> to handle configuration operations.
+            </summary>
+        </member>
+        <member name="T:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysSettings">
+            <summary>
+            Settings class for the key retrieval command, containing all configurable options for key retrieval operations.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysSettings.User">
+            <summary>
+            Gets the username for which SSH keys should be retrieved from Active Directory.
+            Must be in "DOMAIN\Username" format.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysSettings.KeyAttribute">
+            <summary>
+            Specifies the Active Directory attribute name that contains SSH public keys.
+            Defaults to "altSecurityIdentities" if not specified.
+            </summary>
+        </member>
+        <member name="P:RosettaTools.CLI.KeysCmd.SpectreCLI.GetKeysSettings.OpenSSH">
+            <summary>
+            Sets a value indicating that the command is being called by OpenSSH.
+            When true, only SSH keys or null-terminated strings will be written to stdout.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute">
+            <summary>
+            Specifies the priority of a member in overload resolution. When unspecified, the default priority is 0.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute"/> class.
+            </summary>
+            <param name="priority">The priority of the attributed member. Higher numbers are prioritized, lower numbers are deprioritized. 0 is the default if no attribute is present.</param>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute.Priority">
+            <summary>
+            The priority of the member.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.ParamCollectionAttribute">
+            <summary>
+            Indicates that a method will allow a variable number of arguments in its invocation.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net48;net8.0;netstandard2.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>RosettaTools.CLI.KeysCmd</RootNamespace>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <LangVersion>12.0</LangVersion>
+    <AssemblyVersion>2025.01.11.0151</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <Version>$(AssemblyVersion)</Version>
+    <Authors>Christopher Conley</Authors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <WarningLevel>7</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <ApplicationIcon>KeysCmd.ico</ApplicationIcon>
+    <Title>KeysCmd</Title>
+    <Description>A console utility that returns ssh public keys stored in Active Directory for a given user. 
+    Meant to be used as the endpoint for the "AuthorizedKeysCommand" OpenSSH sshd configuration option, but can be used 
+    as a standalone utility.</Description>
+    <PackageIcon>KeysCmd.png</PackageIcon>
+    <Copyright>© 2024-2025 Christopher Conley</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Deterministic>True</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Deterministic>True</Deterministic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="KeysCmd.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Spectre.Console" Version="0.49.2-preview.0.69" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.49.2-preview.0.69" />
+    <PackageReference Include="Spectre.Console.Json" Version="0.49.2-preview.0.69" />
+    <PackageReference Include="System.DirectoryServices" Version="9.0.0" />
+    <PackageReference Include="System.DirectoryServices.Protocols" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="KeysCmd.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

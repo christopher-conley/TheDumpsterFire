@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "KeysCmd": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    },
+    "With user": {
+      "commandName": "Project",
+      "commandLineArgs": "keys get -u DOMAINNAME\\username",
+      "remoteDebugEnabled": false,
+      "authenticationMode": "Windows"
+    },
+    "KeysCmd (-o)": {
+      "commandName": "Project",
+      "commandLineArgs": "-o"
+    },
+    "KeysCmd with user (-o)": {
+      "commandName": "Project",
+      "commandLineArgs": "keys get --user TACOCAT\\palindrome --openssh"
+    }
+  }
+}
