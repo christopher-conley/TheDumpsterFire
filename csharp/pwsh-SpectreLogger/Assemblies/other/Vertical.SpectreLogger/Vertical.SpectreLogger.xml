@@ -1,0 +1,1795 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Vertical.SpectreLogger</name>
+    </assembly>
+    <members>
+        <member name="T:Vertical.SpectreLogger.Core.ILogEventFilter">
+            <summary>
+            Determines when events should be rendered.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Core.ILogEventFilter.Filter(Vertical.SpectreLogger.Core.LogEventContext@)">
+            <summary>
+            Determines whether the given event should be rendered.
+            </summary>
+            <param name="eventContext"><see cref="T:Vertical.SpectreLogger.Core.LogEventContext"/> that describes the event.</param>
+            <returns>True if the event should be printed; false to ignore the event.</returns>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Core.IRendererPipeline">
+            <summary>
+            Defines a renderer pipeline.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Core.IRendererPipeline.Render(Vertical.SpectreLogger.Core.LogEventContext@)">
+            <summary>
+            Renders the log event.
+            </summary>
+            <param name="logEventContext">Log event info</param>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Core.IScopeValues">
+            <summary>
+            Provides access to scope values.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Core.IScopeValues.HasValues">
+            <summary>
+            Gets whether the collection has any values.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Core.IScopeValues.Values">
+            <summary>
+            Gets the items in the collection;
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Core.ITemplateRenderer">
+            <summary>
+            An object that renders the content represented by a template.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Core.ITemplateRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <summary>
+            Renders the template portion of the log event to the provided buffer.
+            </summary>
+            <param name="buffer">Write buffer</param>
+            <param name="context">Log event data.</param>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Core.LogEventContext">
+            <summary>
+            Defines the properties of a log event.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Core.LogEventContext.CategoryName">
+            <summary>
+            Gets the category name of the logger that received the event.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Core.LogEventContext.LogLevel">
+            <summary>
+            Gets the log level.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Core.LogEventContext.EventId">
+            <summary>
+            Gets the event id.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Core.LogEventContext.State">
+            <summary>
+            Gets the event state data.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Core.LogEventContext.Exception">
+            <summary>
+            Gets the exception.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Core.LogEventContext.ScopeValues">
+            <summary>
+            Gets the log event scope values.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Core.LogEventContext.Profile">
+            <summary>
+            Gets the log level profile.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Core.LogEventFilterDelegate">
+            <summary>
+            Defines a delegate that receives log event data and returns a boolean
+            indicating whether or not the event should be filtered from the output.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Destructuring.CompiledWriterCache">
+            <summary>
+            Maintains a cache of <see cref="T:Vertical.SpectreLogger.Reflection.CompiledWriter"/> delegates.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.CompiledWriterCache.GetInstance(System.Type,Vertical.SpectreLogger.Reflection.CompiledWriter)">
+            <summary>
+            Returns a <see cref="T:Vertical.SpectreLogger.Reflection.CompiledWriter"/> for the specified type.
+            </summary>
+            <param name="type">Type to resolve.</param>
+            <param name="defaultWriter">Writer to use as a default.</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Reflection.CompiledWriter"/></returns>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Destructuring.DestructuredKeyValue">
+            <summary>
+            Wraps the key of a destructured value.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.DestructuredKeyValue.#ctor(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Destructuring.DestructuringWriter">
+            <summary>
+            Handles rendering log values in a semi-JSON like format.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.DestructuringWriter.WriteElement(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.DestructuringWriter.WriteStartArray">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.DestructuringWriter.WriteEndArray">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Destructuring.IDestructuringWriter">
+            <summary>
+            Writes an object in destructured format.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.IDestructuringWriter.WriteStartObject">
+            <summary>
+            Writes the start of an object.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.IDestructuringWriter.WriteProperty(System.String,System.Object)">
+            <summary>
+            Writes a property key/value.
+            </summary>
+            <param name="key">Property key</param>
+            <param name="value">Property value</param>
+            <returns></returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.IDestructuringWriter.WriteIntegral(System.Object)">
+            <summary>
+            Writes an integral value.
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.IDestructuringWriter.WriteEndObject">
+            <summary>
+            Writes the end notation for an object.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.IDestructuringWriter.WriteStartArray">
+            <summary>
+            Writes the start of an array.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.IDestructuringWriter.WriteEndArray">
+            <summary>
+            Writes the end notation for an array.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Destructuring.IDestructuringWriter.WriteElement(System.Object)">
+            <summary>
+            Writes an element of a collection.
+            </summary>
+            <param name="value">Value to write</param>
+            <returns>Whether the writer descended into </returns>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Formatting.MultiTypeFormatProvider">
+            <summary>
+            Represents a provider that returns a <see cref="T:Vertical.SpectreLogger.Formatting.MultiTypeFormatter"/>
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.MultiTypeFormatProvider.GetFormat(System.Type)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Formatting.MultiTypeFormatter">
+            <summary>
+            Represents a <see cref="T:System.ICustomFormatter"/> that uses the profile type
+            formatters.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.MultiTypeFormatter.Format(System.String,System.Object,System.IFormatProvider)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Formatting.NullValue">
+            <summary>
+            Provides a special representation of null that can be used for formatting.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Formatting.NullValue.Default">
+            <summary>
+            Defines a default instance.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.NullValue.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.NullValue.ToString(System.String,System.IFormatProvider)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Formatting.ProviderFormatter`1">
+            <summary>
+            Represents a strongly typed formatter for values.
+            </summary>
+            <typeparam name="T">Value type</typeparam>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.ProviderFormatter`1.Format(System.String,System.Object,System.IFormatProvider)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Formatting.TypeFormatterAttribute">
+            <summary>
+            Attributes used to describe the type a formatter supports.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.TypeFormatterAttribute.#ctor(System.Type)">
+            <summary>
+            Creates a new instance.
+            </summary>
+            <param name="type">The type this instance provides formatting for.</param>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Formatting.TypeFormatterAttribute.Type">
+            <summary>
+            Gets the type to associate with the formatter.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Formatting.Types">
+            <summary>
+            Defines groups of integral/system types.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Formatting.Types.UnsignedIntegers">
+            <summary>
+            Represents an array of types that are unsigned integers.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Formatting.Types.SignedIntegers">
+            <summary>
+            Represents an array of types that are signed integers.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Formatting.Types.RealNumbers">
+            <summary>
+            Represents an array of types that are real numbers.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Formatting.Types.Numerics">
+            <summary>
+            Represents an array of types that are numeric types.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Formatting.Types.Characters">
+            <summary>
+            Represents an array of types that are characters.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Formatting.Types.Pointers">
+            <summary>
+            Represents an array of types that are pointers.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Formatting.Types.Temporal">
+            <summary>
+            Represents an array of types that are temporal values.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Formatting.ValueFormatter`1">
+            <summary>
+            Represents a strongly typed formatter for a value type.
+            </summary>
+            <typeparam name="T">Value type being formatted.</typeparam>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.ValueFormatter`1.Format(System.String,System.Object,System.IFormatProvider)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Formatting.ValueWrapper`1">
+            <summary>
+            Base class for value wrappers.
+            </summary>
+            <typeparam name="T">Value type.</typeparam>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.ValueWrapper`1.#ctor(`0)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Formatting.ValueWrapper`1.Value">
+            <summary>
+            Gets the value.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.ValueWrapper`1.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.ValueWrapper`1.ToString(System.String,System.IFormatProvider)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.ValueWrapper`1.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Formatting.ValueWrapper`1.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Internal.DelegateLogEventFilter.Filter(Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.LoggingBuilderExtensions">
+            <summary>
+            Extensions for <see cref="T:Microsoft.Extensions.Logging.ILoggingBuilder"/>
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.LoggingBuilderExtensions.AddSpectreConsole(Microsoft.Extensions.Logging.ILoggingBuilder,System.Action{Vertical.SpectreLogger.Options.SpectreLoggingBuilder})">
+            <summary>
+            Adds the spectre console logging provider.
+            </summary>
+            <param name="builder">Logging builder instance</param>
+            <param name="configureBuilder">A delegate that receives an options that can control
+            how the logger renders events.</param>
+            <returns><paramref name="builder"/></returns>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Options.DestructuringOptions">
+            <summary>
+            Options used to render destructured items.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.DestructuringOptions.MaxDepth">
+            <summary>
+            Gets or sets the max depth at which to descend in an object's
+            property graph.
+            </summary>
+            <remarks>Defaults to a depth of 5.</remarks>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.DestructuringOptions.MaxCollectionItems">
+            <summary>
+            Gets or sets the maximum number of items to show from a collection.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.DestructuringOptions.MaxProperties">
+            <summary>
+            Gets or sets the maximum number of properties to show of an object.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.DestructuringOptions.WriteIndented">
+            <summary>
+            Gets or sets whether to pretty-print (e.g. indenting)
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.DestructuringOptions.IndentSpaces">
+            <summary>
+            Gets or sets the number of spaces that comprise an indent.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Options.LogLevelProfile">
+            <summary>
+            Defines options to be applied to a specific log level.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.LogLevelProfile.LogLevel">
+            <summary>
+            Gets the log level.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.LogLevelProfile.PreserveMarkupInFormatStrings">
+            <summary>
+            Gets or sets whether to preserve markup found in message template format strings.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.LogLevelProfile.OutputTemplate">
+            <summary>
+            Gets or sets the output template.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.LogLevelProfile.TypeFormatters">
+            <summary>
+            Gets a dictionary of <see cref="T:System.ICustomFormatter"/> for value types.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.LogLevelProfile.ValueStyles">
+            <summary>
+            Gets a dictionary of markup to apply before a specific value is rendered.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.LogLevelProfile.TypeStyles">
+            <summary>
+            Gets a dictionary of markup to apply before a value of a specific type is rendered.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.LogLevelProfile.DefaultLogValueStyle">
+            <summary>
+            Gets the style to apply before rendering a log value when no value or type
+            style is matched.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.LogLevelProfile.ConfiguredOptions">
+            <summary>
+            Gets a dictionary of option objects for renderers.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.LogLevelProfile.Formatter">
+            <summary>
+            Gets the custom formatter.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.LogLevelProfile.FormatProvider">
+            <summary>
+            Gets the format provider.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfile.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Options.LogLevelProfileExtensions">
+            <summary>
+            Extensions for <see cref="T:Vertical.SpectreLogger.Options.LogLevelProfile"/>
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeFormatters(Vertical.SpectreLogger.Options.LogLevelProfile,System.Reflection.Assembly)">
+            <summary>
+            Adds type formatters to the configuration that are decorated with
+            <see cref="T:Vertical.SpectreLogger.Formatting.TypeFormatterAttribute"/>
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="assembly">The assembly to scan for formatters</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Options.LogLevelProfile"/></returns>
+            <exception cref="T:System.InvalidOperationException">One of the discovered types could not be created.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeFormatter(Vertical.SpectreLogger.Options.LogLevelProfile,System.Type,System.ICustomFormatter)">
+            <summary>
+            Associates an <see cref="T:System.ICustomFormatter"/> instance with the given type.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="type">The type to associate the formatter to.</param>
+            <param name="formatter">The custom formatter instance.</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Options.LogLevelProfile"/></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="formatter"/> is null.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeFormatter(Vertical.SpectreLogger.Options.LogLevelProfile,System.Collections.Generic.IEnumerable{System.Type},System.ICustomFormatter)">
+            <summary>
+            Associates an <see cref="T:System.ICustomFormatter"/> instance with the given types.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="types">The types to associate the formatter to.</param>
+            <param name="formatter">The custom formatter instance.</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Options.LogLevelProfile"/></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="types"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="formatter"/> is null.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeFormatter(Vertical.SpectreLogger.Options.LogLevelProfile,System.Collections.Generic.IEnumerable{System.Type},System.Func{System.String,System.Object,System.IFormatProvider,System.String})">
+            <summary>
+            Associates an <see cref="T:System.ICustomFormatter"/> instance with the given types.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="types">The types to associate the formatter to.</param>
+            <param name="formatter">The formatter delegate.</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Options.LogLevelProfile"/></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="formatter"/> is null.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeFormatter``1(Vertical.SpectreLogger.Options.LogLevelProfile,System.ICustomFormatter)">
+            <summary>
+            Associates an <see cref="T:System.ICustomFormatter"/> instance with the given type.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <typeparam name="T">The type to associate the formatter to.</typeparam>
+            <param name="formatter">The custom formatter instance.</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Options.LogLevelProfile"/></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="formatter"/> is null.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeFormatter``1(Vertical.SpectreLogger.Options.LogLevelProfile,System.Func{System.String,``0,System.String})">
+            <summary>
+            Associates an <see cref="T:System.ICustomFormatter"/> instance with the given type.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <typeparam name="T">The type to associate the formatter to.</typeparam>
+            <param name="formatter">The delegate that accepts the format, value, and format provider and returns
+            the formatted string.</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Options.LogLevelProfile"/></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="formatter"/> is null.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeFormatter``1(Vertical.SpectreLogger.Options.LogLevelProfile,System.Func{System.String,``0,System.IFormatProvider,System.String})">
+            <summary>
+            Associates an <see cref="T:System.ICustomFormatter"/> instance with the given type.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <typeparam name="T">The type to associate the formatter to.</typeparam>
+            <param name="formatter">The delegate that accepts the format, value, and format provider and returns
+            the formatted string.</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Options.LogLevelProfile"/></returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="formatter"/> is null.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddValueStyle(Vertical.SpectreLogger.Options.LogLevelProfile,System.Object,System.String)">
+            <summary>
+            Adds markup that is used to style the rendering of a specific value.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="value">The value to associate with the style.</param>
+            <param name="markup">The markup to write prior to rendering the value.</param>
+            <returns>A reference to the given profile.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="value"/> is null.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="markup"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="markup"/> is whitespace.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddValueStyle(Vertical.SpectreLogger.Options.LogLevelProfile,System.Object,Spectre.Console.Color)">
+            <summary>
+            Adds markup that is used to style the rendering of a specific value.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="value">The value to associate with the style.</param>
+            <param name="color">The color to write prior to rendering the value.</param>
+            <returns>A reference to the given profile.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeStyle(Vertical.SpectreLogger.Options.LogLevelProfile,System.Type,System.String)">
+            <summary>
+            Adds markup that is used to style the rendering of values of the given type.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="type">The type to associate with the style.</param>
+            <param name="markup">The markup to write prior to rendering the value.</param>
+            <returns>A reference to the given profile.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="type"/> is null.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="markup"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="markup"/> is whitespace.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeStyle(Vertical.SpectreLogger.Options.LogLevelProfile,System.Type,Spectre.Console.Color)">
+            <summary>
+            Adds markup that is used to style the rendering of values of the given type.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="type">The type to associate with the style.</param>
+            <param name="color">The color to write prior to rendering the value.</param>
+            <returns>A reference to the given profile.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="type"/> is null.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeStyle(Vertical.SpectreLogger.Options.LogLevelProfile,System.Collections.Generic.IEnumerable{System.Type},System.String)">
+            <summary>
+            Adds markup that is used to style the rendering of values of the given types.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="types">The types to associate with the style.</param>
+            <param name="markup">The markup to write prior to rendering the value.</param>
+            <returns>A reference to the given profile.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="types"/> is null.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="markup"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="markup"/> is whitespace.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeStyle(Vertical.SpectreLogger.Options.LogLevelProfile,System.Collections.Generic.IEnumerable{System.Type},Spectre.Console.Color)">
+            <summary>
+            Adds markup that is used to style the rendering of values of the given types.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="types">The types to associate with the style.</param>
+            <param name="color">The color to write prior to rendering the value.</param>
+            <returns>A reference to the given profile.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="types"/> is null.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeStyle``1(Vertical.SpectreLogger.Options.LogLevelProfile,System.String)">
+            <summary>
+            Adds markup that is used to style the rendering of values of the given type.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="markup">The markup to write prior to rendering the value.</param>
+            <typeparam name="T">The type to associate with the style.</typeparam>
+            <returns>A reference to the given profile.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="markup"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="markup"/> is whitespace.</exception>        
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.AddTypeStyle``1(Vertical.SpectreLogger.Options.LogLevelProfile,Spectre.Console.Color)">
+            <summary>
+            Adds markup that is used to style the rendering of values of the given type.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="color">The color to write prior to rendering the value.</param>
+            <typeparam name="T">The type to associate with the style.</typeparam>
+            <returns>A reference to the given profile.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.ConfigureOptions``1(Vertical.SpectreLogger.Options.LogLevelProfile,System.Action{``0})">
+            <summary>
+            Registers a delegate that provides configuration for a specific renderer.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <param name="configureOptions">A delegate that performs configuration on the provided options object.</param>
+            <typeparam name="TOptions">Options type.</typeparam>
+            <returns>A reference to the given profile.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="configureOptions"/> is null.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.ClearTypeFormatters(Vertical.SpectreLogger.Options.LogLevelProfile)">
+            <summary>
+            Clears all type formatters.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <returns>A reference to the given profile.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.ClearTypeStyles(Vertical.SpectreLogger.Options.LogLevelProfile)">
+            <summary>
+            Clears all type styles.
+            </summary>
+            <param name="profile">Log level profile</param>
+            <returns>A reference to the given profile.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.LogLevelProfileExtensions.ClearValueStyles(Vertical.SpectreLogger.Options.LogLevelProfile)">
+            <summary>
+            Clears all value styles.
+            </summary>
+            <param name="profile">Log level profile.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Options.MicrosoftStyleLoggerOptions">
+            <summary>
+            Extensions for <see cref="T:Vertical.SpectreLogger.Options.SpectreLoggingBuilder"/>
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.MicrosoftStyleLoggerOptions.UseMicrosoftConsoleStyle(Vertical.SpectreLogger.Options.SpectreLoggingBuilder)">
+            <summary>
+            Configures the provider output similar to Microsoft's console logger implementation.
+            </summary>
+            <param name="config">Builder object</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Options.SpectreLoggingBuilder"/></returns>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Options.OptionsCollection">
+            <summary>
+            Manages options for renderer types.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.OptionsCollection.Clear">
+            <summary>
+            Clears all options from the collection.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.OptionsCollection.Configure``1(System.Action{``0})">
+            <summary>
+            Configures an options object for a renderer type.
+            </summary>
+            <param name="configure">Delegate that configures the provided object.</param>
+            <typeparam name="TOptions">Options type.</typeparam>
+            <exception cref="T:System.ArgumentNullException"><paramref name="configure"/> delegate is null</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.OptionsCollection.GetOptions``1">
+            <summary>
+            Retrieves the value of an options object.
+            </summary>
+            <typeparam name="TOptions">Options type.</typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.OptionsCollection.ToString">
+            <inheritdoc /> 
+        </member>
+        <member name="T:Vertical.SpectreLogger.Options.SerilogStyleLoggerOptions">
+            <summary>
+            Extensions for <see cref="T:Vertical.SpectreLogger.Options.SpectreLoggingBuilder"/>
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SerilogStyleLoggerOptions.UseSerilogConsoleStyle(Vertical.SpectreLogger.Options.SpectreLoggingBuilder)">
+            <summary>
+            Configures the log level profiles to render closely to the style of Serilog.
+            </summary>
+            <param name="config">Configuration</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Options.SpectreLoggingBuilder"/></returns>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Options.SpectreLoggerOptions">
+            <summary>
+            Represents the options global to the logging provider.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.SpectreLoggerOptions.MinimumLogLevel">
+            <summary>
+            Gets or sets the minimum log level.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.SpectreLoggerOptions.LogEventFilter">
+            <summary>
+            Gets or sets an object that controls log event filtering.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.SpectreLoggerOptions.MinimumLevelOverrides">
+            <summary>
+            Gets a dictionary of log level overrides.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.SpectreLoggerOptions.LogLevelProfiles">
+            <summary>
+            Gets the log level profiles.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.SpectreLoggerOptions.MaxPooledBuffers">
+            <summary>
+            Gets or sets the maximum number of pooled buffers.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Options.SpectreLoggingBuilder">
+            <summary>
+            Object used to configure the logger.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.Services">
+            <summary>
+            Gets the application services collection.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel)">
+            <summary>
+            Sets the minimum log level.
+            </summary>
+            <param name="logLevel">Log level.</param>
+            <returns>A reference to this instance.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.SetMinimumLevel(System.String,Microsoft.Extensions.Logging.LogLevel)">
+            <summary>
+            Sets the minimum log level for a specific logger category.
+            </summary>
+            <param name="category">The logger category.</param>
+            <param name="logLevel">The minimum log level used to evaluated whether events should be emitted.</param>
+            <returns>A reference to this instance.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="category"/> is null or whitespace.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.SetLogEventFilter(Vertical.SpectreLogger.Core.ILogEventFilter)">
+            <summary>
+            Sets an object that can filter log events from the rendering pipeline.
+            </summary>
+            <param name="eventFilter"></param>
+            <returns>A reference to this instance.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.SetLogEventFilter(Vertical.SpectreLogger.Core.LogEventFilterDelegate)">
+            <summary>
+            Sets a delegate that filters log events from the rendering pipeline.
+            </summary>
+            <param name="filter">A <see cref="T:Vertical.SpectreLogger.Core.LogEventFilterDelegate"/></param>
+            <returns>A reference to this instance,.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.WriteInBackground">
+            <summary>
+            Writes event data to the console on a background thread.
+            </summary>
+            <returns>A reference to this instance.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.WriteInForeground">
+            <summary>
+            Writes event data to the console on the calling thread.
+            </summary>
+            <returns>A reference to this instance.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.UseConsole(Spectre.Console.IAnsiConsole)">
+            <summary>
+            Sets the provided instance as the final output device.
+            </summary>
+            <param name="console">The console to output log events to.</param>
+            <returns>A reference to this instance.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.ConfigureProfiles(System.Action{Vertical.SpectreLogger.Options.LogLevelProfile})">
+            <summary>
+            Configures settings for all log profiles.
+            </summary>
+            <param name="configureProfile">Delegate that performs the configuration.</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Options.SpectreLoggerOptions"/></returns>
+            <remarks>
+            This method calls the configuration delegate for each log level profile.
+            </remarks>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.ConfigureProfiles(System.Collections.Generic.IEnumerable{Microsoft.Extensions.Logging.LogLevel},System.Action{Vertical.SpectreLogger.Options.LogLevelProfile})">
+            <summary>
+            Configures settings for the given log levels.
+            </summary>
+            <param name="logLevels">Log levels of the profiles to configure.</param>
+            <param name="configureProfile">Delegate that performs the configuration.</param>
+            <returns>A reference to this instance.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.ConfigureProfile(Microsoft.Extensions.Logging.LogLevel,System.Action{Vertical.SpectreLogger.Options.LogLevelProfile})">
+            <summary>
+            Configures a specific log level profile.
+            </summary>
+            <param name="logLevel">Log level.</param>
+            <param name="configureProfile">Delegate that performs the configuration.</param>
+            <returns>A reference to this instance</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.AddTemplateRenderer(System.Type)">
+            <summary>
+            Adds a template renderer.
+            </summary>
+            <param name="rendererType">Type that implements <see cref="T:Vertical.SpectreLogger.Core.ITemplateRenderer"/>.</param>
+            <returns>A reference to this instance</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.AddTemplateRenderer``1">
+            <summary>
+            Adds a template renderer.
+            </summary>
+            <typeparam name="T">Type that implements <see cref="T:Vertical.SpectreLogger.Core.ITemplateRenderer"/></typeparam>
+            <returns>A reference to this instance</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.AddTemplateRenderers(System.Reflection.Assembly)">
+            <summary>
+            Adds all public template renderers found in an assembly.
+            </summary>
+            <param name="assembly">The assembly to scan. If not provided, the calling assembly is used.</param>
+            <returns>A reference to this instance</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Options.SpectreLoggingBuilder.SetPooledBufferCount(System.Int32)">
+            <summary>
+            Sets the maximum number of pooled write buffers.
+            </summary>
+            <param name="count">Number of buffers to retain.</param>
+            <returns>A reference to this instance.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.BackgroundConsoleWriter.#ctor(Spectre.Console.IAnsiConsole)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="ansiConsole">AnsiConsole</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.BackgroundConsoleWriter.ResetLine">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.BackgroundConsoleWriter.Write(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Output.ConsoleWriter">
+            <summary>
+            Base class for console writer implementations.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.ConsoleWriter.#ctor(Spectre.Console.IAnsiConsole)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="console"><see cref="T:Spectre.Console.IAnsiConsole"/> implementation.</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.ConsoleWriter.WriteToConsole(System.String)">
+            <summary>
+            Writes a value to the console.
+            </summary>
+            <param name="str">Content to write.</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.ConsoleWriter.ResetLineCore">
+            <summary>
+            Resets the console position.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.ForegroundConsoleWriter.#ctor(Spectre.Console.IAnsiConsole)">
+            <summary>
+            Creates a new instance
+            </summary>
+            <param name="console">Console instance</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.ForegroundConsoleWriter.ResetLine">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.ForegroundConsoleWriter.Write(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Output.IConsoleWriter">
+            <summary>
+            Provides an interface to IAnsiConsole
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.IConsoleWriter.ResetLine">
+            <summary>
+            When implemented, resets the output device for the next operation.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.IConsoleWriter.Write(System.String)">
+            <summary>
+            Writes content to the underlying console.
+            </summary>
+            <param name="content">Content to write.</param>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Output.IWriteBuffer">
+            <summary>
+            Provides an interface for writing content.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Output.IWriteBuffer.Margin">
+            <summary>
+            Gets the number of characters to indent anytime a newline character is
+            encountered.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Output.IWriteBuffer.LinePosition">
+            <summary>
+            Gets the number of characters that have been written since the last
+            new line character.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.IWriteBuffer.Write(System.Char,System.Int32)">
+            <summary>
+            Writes a character to the buffer.
+            </summary>
+            <param name="c">Character to write.</param>
+            <param name="count">The number of times to repeat writing <paramref name="c"/></param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.IWriteBuffer.Write(System.String)">
+            <summary>
+            Writes a string to the buffer.
+            </summary>
+            <param name="str">String to write</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.IWriteBuffer.Write(System.String,System.Int32,System.Int32)">
+            <summary>
+            Writes a string or string portion.
+            </summary>
+            <param name="str">String value</param>
+            <param name="startIndex">Starting index</param>
+            <param name="length">Number of characters to write</param>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Output.IWriteBuffer.Length">
+            <summary>
+            Gets the length of the buffer.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.IWriteBuffer.Flush">
+            <summary>
+            Flushes the content of the buffer to an underlying output. 
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Output.WriteBuffer">
+            <summary>
+            Represents the default implementation of a <see cref="T:Vertical.SpectreLogger.Output.IWriteBuffer"/>.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.WriteBuffer.#ctor(Vertical.SpectreLogger.Output.IConsoleWriter)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="consoleWriter">Underlying console to flush output to.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="consoleWriter"/> is null.</exception>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Output.WriteBuffer.Margin">
+            <inheritdoc />
+        </member>
+        <member name="P:Vertical.SpectreLogger.Output.WriteBuffer.LinePosition">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.WriteBuffer.Write(System.Char,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.WriteBuffer.Write(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.WriteBuffer.Write(System.String,System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="P:Vertical.SpectreLogger.Output.WriteBuffer.Length">
+            <inheritdoc /> 
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.WriteBuffer.Flush">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.WriteBuffer.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Output.WriteBufferExtensions">
+            <summary>
+            Extends the <see cref="T:Vertical.SpectreLogger.Output.IWriteBuffer"/> interface.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.WriteBufferExtensions.WriteLine(Vertical.SpectreLogger.Output.IWriteBuffer)">
+            <summary>
+            Writes a newline to the buffer.
+            </summary>
+            <param name="buffer">Buffer</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.WriteBufferExtensions.WriteTemplateValue(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Options.LogLevelProfile,System.Boolean,System.Object)">
+            <summary>
+            Writes a template state value, considering it may be a FormattedLogValues instance.
+            </summary>
+            <param name="buffer">Buffer</param>
+            <param name="profile">Log level profile</param>
+            <param name="destructureValues">Whether to destructure values</param>
+            <param name="state">Value to evaluate</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.WriteBufferExtensions.WriteLogValue``1(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Options.LogLevelProfile,Vertical.SpectreLogger.Templates.TemplateSegment,``0,System.Action{System.String})">
+            <summary>
+            Writes a log value to the buffer.
+            </summary>
+            <param name="buffer">Write buffer</param>
+            <param name="profile">The profile that contains the styles and formatting to apply</param>
+            <param name="templateSegment">The template segment</param>
+            <param name="value">The value to write</param>
+            <param name="writer">Optional action that commits values to the buffer</param>
+            <typeparam name="T">The value type</typeparam>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Output.WriteBufferExtensions.WriteStyledValue``1(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Options.LogLevelProfile,``0)">
+            <summary>
+            Writes a log value to the buffer, only applying style.
+            </summary>
+            <param name="buffer">Write buffer</param>
+            <param name="profile">The profile that contains the styles and formatting to apply</param>
+            <param name="value">The value to write</param>
+            <typeparam name="T">The value type</typeparam>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Reflection.TypeActivator.CanCreateInstanceOfType``1(System.Type,System.String@)">
+            <summary>
+            Verifies a type can be dynamically activated.
+            </summary>
+            <param name="implementationType">Implementation type.</param>
+            <param name="reason">The reason the type cannot be created.</param>
+            <typeparam name="TService">Service type.</typeparam>
+            <exception cref="T:System.ArgumentNullException"><paramref name="implementationType"/> is null.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="implementationType"/> is abstract, an interface,
+            or does not have a compatible constructor.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Reflection.TypeActivator.CreateInstance``1(System.Collections.Generic.List{System.Object})">
+            <summary>
+            Tries to create an instance of the given type.
+            </summary>
+            <param name="dependencies">The dependencies to use as parameter arguments.</param>
+            <returns>The object instance.</returns>
+            <typeparam name="T">The type of object to create.</typeparam>
+            <exception cref="T:System.ArgumentNullException"><paramref name="dependencies"/> is null.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="dependencies"/> contains a null reference.</exception>
+            <exception cref="T:System.InvalidOperationException">A suitable constructor was not matched.</exception>
+            <remarks>
+            This method returns the constructor with the highest number of matching arguments.
+            </remarks>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Reflection.TypeActivator.CreateInstance(System.Type,System.Collections.Generic.List{System.Object})">
+            <summary>
+            Tries to create an instance of the given type.
+            </summary>
+            <param name="type">The type to create.</param>
+            <param name="dependencies">The dependencies to use as parameter arguments.</param>
+            <returns>The object instance.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="dependencies"/> is null.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="dependencies"/> contains a null reference.</exception>
+            <exception cref="T:System.InvalidOperationException">A suitable constructor was not matched.</exception>
+            <remarks>
+            This method returns the constructor with the highest number of matching arguments.
+            </remarks>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ActivityIdRenderer">
+            <summary>
+            Prints the activity id if available.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Rendering.ActivityIdRenderer.Template">
+            <summary>
+            Defines the template for this renderer.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ActivityIdRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.CategoryNameRenderer">
+            <summary>
+            Renders the logger category.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Rendering.CategoryNameRenderer.Template">
+            <summary>
+            Defines the template for this renderer.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.CategoryNameRenderer.#ctor(Vertical.SpectreLogger.Templates.TemplateSegment)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="template">Matching segment from the output template.</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.CategoryNameRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.CategoryNameRenderer.Value">
+            <summary>
+            Wrapping type for the category name.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.CategoryNameRenderer.DefaultFormatter">
+            <summary>
+            Custom formatter for category name.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.CategoryNameRenderer.DefaultFormatter.Format(System.String,System.Object,System.IFormatProvider)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.DateTimeRenderer">
+            <summary>
+            Renders the date time produced by the configured factory.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.DateTimeRenderer.Options">
+            <summary>
+            Options for <see cref="T:Vertical.SpectreLogger.Rendering.DateTimeRenderer"/>
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.DateTimeRenderer.Options.ValueFactory">
+            <summary>
+            Gets or sets a function that returns the desired
+            <see cref="T:System.DateTimeOffset"/>
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Rendering.DateTimeRenderer.Template">
+            <summary>
+            Defines the template for this renderer.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.DateTimeRenderer.Value">
+            <summary>
+            Emits the date/time value
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.DateTimeRenderer.Value.#ctor(System.DateTimeOffset)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.DateTimeRenderer.#ctor(Vertical.SpectreLogger.Templates.TemplateSegment)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="template">Matching template segment.</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.DateTimeRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer">
+            <summary>
+            Renders the event exception.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ExceptionRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer.ExceptionNameValue">
+            <summary>
+            Wraps the exception name emitted value.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer.ExceptionMessageValue">
+            <summary>
+            Wraps the exception message emitted value.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer.MethodNameValue">
+            <summary>
+            Wraps the method name of a stack frame.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer.ParameterTypeValue">
+            <summary>
+            Wraps the parameter type name of a stack frame method.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer.ParameterNameValue">
+            <summary>
+            Wraps the parameter name of a stack frame method.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer.SourceDirectoryValue">
+            <summary>
+            Wraps the directory name of a stack frame method.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer.SourceFileValue">
+            <summary>
+            Wraps the file name of a stack frame method.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer.SourceLocationValue">
+            <summary>
+            Wraps the source line number of a stack frame method.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer.TextValue">
+            <summary>
+            Wraps any other text in an exception message.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer.Options">
+            <summary>
+            Options for <see cref="T:Vertical.SpectreLogger.Rendering.ExceptionRenderer"/>
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.ExceptionRenderer.Options.UnwindInnerExceptions">
+            <summary>
+            Gets or sets whether to unwind inner exceptions.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.ExceptionRenderer.Options.MaxStackFrames">
+            <summary>
+            Gets or sets the maximum number of stack frames to show per exception.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.ExceptionRenderer.Options.StackFrameIndent">
+            <summary>
+            Gets or sets the number of characters to indent on each stack frame output.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.ExceptionRenderer.Options.ShowParameterTypes">
+            <summary>
+            Gets or sets whether to display the parameter type in stack frame methods.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.ExceptionRenderer.Options.ShowParameterNames">
+            <summary>
+            Gets or sets whether to display the parameter name in stack frame methods.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.ExceptionRenderer.Options.ShowSourcePaths">
+            <summary>
+            Gets or sets whether to display the file name of a stack frame method.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.ExceptionRenderer.Options.ShowSourceLocations">
+            <summary>
+            Gets or sets whether to display the line number in files names of a stack frame
+            method.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.LogLevelRenderer">
+            <summary>
+            Renders the log level.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Rendering.LogLevelRenderer.Template">
+            <summary>
+            Defines the template for this renderer.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.LogLevelRenderer.Formatter">
+            <summary>
+            Implements a formatter for <see cref="T:Microsoft.Extensions.Logging.LogLevel"/> values.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.LogLevelRenderer.Formatter.Format(System.String,System.Object,System.IFormatProvider)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.LogLevelRenderer.#ctor(Vertical.SpectreLogger.Templates.TemplateSegment)">
+            <summary>
+            Creates a new instance.
+            </summary>
+            <param name="template">The matching template segment.</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.LogLevelRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.MarginControlRenderer">
+            <summary>
+            Controls the margin in the template rendering.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.MarginControlRenderer.#ctor(System.Text.RegularExpressions.Match)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="match">Match object</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.MarginControlRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.MessageRenderer">
+            <summary>
+            Renders the message portion of the log event.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.MessageRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.NewLineRenderer">
+            <summary>
+            Renders a new line.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.NewLineRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ProcessIdRenderer">
+            <summary>
+            Renders the thread id (at the time of capture).
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Rendering.ProcessIdRenderer.Template">
+            <summary>
+            Defines the template for this renderer.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ProcessIdRenderer.Value">
+            <summary>
+            Wraps the thread value.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ProcessIdRenderer.Value.#ctor">
+            <summary>
+            Creates a new instance of this type. The thread id is automatically assigned.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ProcessIdRenderer.DefaultFormatter">
+            <summary>
+            The default formatter for this type.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ProcessIdRenderer.DefaultFormatter.Format(System.String,System.Object,System.IFormatProvider)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ProcessIdRenderer.#ctor(Vertical.SpectreLogger.Templates.TemplateSegment)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="template">Template</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ProcessIdRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.RendererPipeline.#ctor(Microsoft.Extensions.Options.IOptions{Vertical.SpectreLogger.Options.SpectreLoggerOptions},Vertical.SpectreLogger.Templates.ITemplateRendererBuilder,Vertical.SpectreLogger.Internal.Pooling.IObjectPool{Vertical.SpectreLogger.Output.IWriteBuffer})">
+            <summary>
+            Creates a new instance.
+            </summary>
+            <param name="optionsProvider">Options provider for <see cref="T:Vertical.SpectreLogger.Options.SpectreLoggerOptions"/></param>
+            <param name="rendererBuilder">Object that builds renderers.</param>
+            <param name="bufferPool">Buffer pool</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.RendererPipeline.Render(Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ScopeValueRenderer">
+            <summary>
+            Renders individual scope values.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Rendering.ScopeValueRenderer.Template">
+            <summary>
+            Defines the template for the renderer.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ScopeValueRenderer.#ctor(Vertical.SpectreLogger.Templates.TemplateSegment)">
+            <summary>
+            Creates a new instance.
+            </summary>
+            <param name="template">Matching template.</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ScopeValueRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ScopeValuesRenderer">
+            <summary>
+            Renders scope values in the log event.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ScopeValuesRenderer.Options">
+            <summary>
+            Options for <see cref="T:Vertical.SpectreLogger.Rendering.ScopeValuesRenderer"/>
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.ScopeValuesRenderer.Options.ContentBefore">
+            <summary>
+            Gets or sets content to output before rendering scopes.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.ScopeValuesRenderer.Options.ContentBetween">
+            <summary>
+            Gets or sets content to output between each item.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Rendering.ScopeValuesRenderer.Options.ContentAfter">
+            <summary>
+            Gets or sets content to output after rendering scopes.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ScopeValuesRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.StaticSpanRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ThreadIdRenderer">
+            <summary>
+            Renders the thread id (at the time of capture).
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Rendering.ThreadIdRenderer.Template">
+            <summary>
+            Defines the template for this renderer.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ThreadIdRenderer.Value">
+            <summary>
+            Wraps the thread value.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ThreadIdRenderer.Value.#ctor">
+            <summary>
+            Creates a new instance of this type. The thread id is automatically assigned.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Rendering.ThreadIdRenderer.DefaultFormatter">
+            <summary>
+            The default formatter for this type.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ThreadIdRenderer.DefaultFormatter.Format(System.String,System.Object,System.IFormatProvider)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ThreadIdRenderer.#ctor(Vertical.SpectreLogger.Templates.TemplateSegment)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="template">Template segment</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Rendering.ThreadIdRenderer.Render(Vertical.SpectreLogger.Output.IWriteBuffer,Vertical.SpectreLogger.Core.LogEventContext@)">
+            <inheritdoc />
+        </member>
+        <member name="P:Vertical.SpectreLogger.Scopes.EmptyScopeValues.HasValues">
+            <inheritdoc />
+        </member>
+        <member name="P:Vertical.SpectreLogger.Scopes.EmptyScopeValues.Values">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Scopes.EmptyScopeValues.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Scopes.LoggerScope.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="P:Vertical.SpectreLogger.Scopes.LoggerScope.PreviousScope">
+            <summary>
+            Gets the previous scope.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Scopes.LoggerScope.Value">
+            <summary>
+            Gets the scope value.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Scopes.LoggerScope.ToString">
+            <inheritdoc />
+        </member>
+        <member name="P:Vertical.SpectreLogger.Scopes.MultiScopeValues.HasValues">
+            <inheritdoc />
+        </member>
+        <member name="P:Vertical.SpectreLogger.Scopes.MultiScopeValues.Values">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Scopes.MultiScopeValues.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Scopes.ScopeManager">
+            <summary>
+            Manages logging scopes.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Scopes.ScopeManager.ScopeDisposed(Vertical.SpectreLogger.Scopes.LoggerScope)">
+            <summary>
+            Signaled when a scope is disposed.
+            </summary>
+            <param name="scope">Scope</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Scopes.ScopeManager.BeginScope``1(``0)">
+            <summary>
+            Begins a new scope.
+            </summary>
+            <param name="value">Scope value</param>
+            <typeparam name="T">Value type</typeparam>
+            <returns><see cref="T:System.IDisposable"/></returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Scopes.ScopeManager.GetValues">
+            <summary>
+            Gets the current scope values.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Scopes.SingleScopeValue.HasValues">
+            <inheritdoc />
+        </member>
+        <member name="P:Vertical.SpectreLogger.Scopes.SingleScopeValue.Values">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Scopes.SingleScopeValue.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.SpectreLogger">
+            <summary>
+            Implementation of the logger.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.SpectreLogger.Log``1(Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,``0,System.Exception,System.Func{``0,System.Exception,System.String})">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.SpectreLogger.IsEnabled(Microsoft.Extensions.Logging.LogLevel)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.SpectreLogger.BeginScope``1(``0)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.SpectreLoggerProvider">
+            <summary>
+            Logger provider for <see cref="T:Vertical.SpectreLogger.SpectreLogger"/>
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.SpectreLoggerProvider.#ctor(Microsoft.Extensions.Options.IOptions{Vertical.SpectreLogger.Options.SpectreLoggerOptions},Vertical.SpectreLogger.Core.IRendererPipeline)">
+            <summary>
+            Creates a new instance of this provider type.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.SpectreLoggerProvider.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.SpectreLoggerProvider.CreateLogger(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Templates.ITemplateRendererBuilder">
+            <summary>
+            Defines an object that produces an ordered sequence of template renderers.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.ITemplateRendererBuilder.GetRenderers(System.String)">
+            <summary>
+            Builds an ordered collection of template renderers.
+            </summary>
+            <param name="templateString">Template string.</param>
+            <returns>List of <see cref="T:Vertical.SpectreLogger.Core.ITemplateRenderer"/> objects.</returns>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Templates.TemplateAttribute">
+            <summary>
+            Defines the template for a rendering component.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateAttribute.#ctor(System.String)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="template">Template value when applied to a class.</param>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateAttribute.Template">
+            <summary>
+            Gets the template value.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateAttribute.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateAttribute.ValueFromType(System.Type)">
+            <summary>
+            Attempts to locate an instance of the attribute from the given type.
+            </summary>
+            <param name="type">Type that is decorated with the attribute.</param>
+            <returns><see cref="T:Vertical.SpectreLogger.Templates.TemplateAttribute"/> or null.</returns>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Templates.TemplateCallback">
+            <summary>
+            Defines a delegate that receives template segments during split operations.
+            </summary>
+        </member>
+        <member name="T:Vertical.SpectreLogger.Templates.TemplateDescriptor">
+            <summary>
+            Represents the descriptor of a <see cref="T:Vertical.SpectreLogger.Core.ITemplateRenderer"/>
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateDescriptor.ImplementationType">
+            <summary>
+            Gets the implementation type.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateDescriptor.Template">
+            <summary>
+            Gets the template that is associated with the renderer.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateDescriptor.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateDescriptor.Equals(Vertical.SpectreLogger.Templates.TemplateDescriptor)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateDescriptor.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateDescriptor.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Templates.TemplatePatternBuilder">
+            <summary>
+            Used to build the expression pattern for templates.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplatePatternBuilder.ForKey(System.String)">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="keyPattern">Key</param>
+            <exception cref="T:System.ArgumentException"><paramref name="keyPattern"/> contains an invalid character.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplatePatternBuilder.AddDestructuring">
+            <summary>
+            Adds a match group for the destructuring specifier.
+            </summary>
+            <returns>A reference to this instance.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplatePatternBuilder.AddControlPattern(System.String,System.Boolean)">
+            <summary>
+            Adds a pattern for a control group.
+            </summary>
+            <param name="controlPattern">Pattern to allow in the control group.</param>
+            <param name="isOptional">Whether the control pattern must be matched.</param>
+            <returns>A reference to this instance.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="controlPattern"/> contains an invalid character.</exception>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplatePatternBuilder.AddAlignment">
+            <summary>
+            Adds a pattern for width formatting.
+            </summary>
+            <returns>A reference to this instance.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplatePatternBuilder.AddFormatting">
+            <summary>
+            Adds a pattern for value formatting.
+            </summary>
+            <returns>A reference to this instance.</returns>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplatePatternBuilder.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplatePatternBuilder.Build">
+            <summary>
+            Gets the template.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateRendererBuilder.#ctor(Microsoft.Extensions.Options.IOptions{Vertical.SpectreLogger.Options.SpectreLoggerOptions},System.Collections.Generic.IEnumerable{Vertical.SpectreLogger.Templates.TemplateDescriptor})">
+            <summary>
+            Creates a new instance of this type.
+            </summary>
+            <param name="optionsProvider">Options provider.</param>
+            <param name="descriptors">Descriptors.</param>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateRendererBuilder.GetRenderers(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Templates.TemplateSegment">
+            <summary>
+            Represents a segment of a template string.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Templates.TemplateSegment.DestructuringGroup">
+            <summary>
+            Gets the destructuring capture group.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Templates.TemplateSegment.InnerTemplateGroup">
+            <summary>
+            Gets the inner template group.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Templates.TemplateSegment.KeyGroup">
+            <summary>
+            Defines the group name that captures the renderer template key.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Templates.TemplateSegment.ControlGroup">
+            <summary>
+            Defines the group name that captures the control group.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Templates.TemplateSegment.CompositeFormatSpanGroup">
+            <summary>
+            Defines the group name that captures the composite formatting span.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Templates.TemplateSegment.WidthSpanGroup">
+            <summary>
+            Defines the group name that captures the width span portion of the composite
+            formatting span.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Templates.TemplateSegment.WidthValueGroup">
+            <summary>
+            Defines the group name that captures the width value of the composite
+            formatting span.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Templates.TemplateSegment.FormatSpanGroup">
+            <summary>
+            Defines the group name that captures the format span portion of the composite
+            formatting span.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Templates.TemplateSegment.FormatValueGroup">
+            <summary>
+            Defines the group name that captures the format code value of the composite
+            formatting span.
+            </summary>
+        </member>
+        <member name="F:Vertical.SpectreLogger.Templates.TemplateSegment.DestructureTemplate">
+            <summary>
+            Gets a template designed to indicate destructuring.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.Match">
+            <summary>
+            Gets the match object or null if the segment is not a template.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.IsTemplate">
+            <summary>
+            Gets whether the segment is a template.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.Value">
+            <summary>
+            Gets the segment value.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.HasDestructureSpecifier">
+            <summary>
+            Gets whether the destructure operator was specified.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.InnerTemplate">
+            <summary>
+            Gets the inner content of the template with the braces removed.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.Key">
+            <summary>
+            Gets the template key.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.ControlCode">
+            <summary>
+            Gets the template control code.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.ControlCodeMatched">
+            <summary>
+            Gets whether the control code group was matched.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.CompositeFormatSpan">
+            <summary>
+            Gets the format group value.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.AlignmentSpan">
+            <summary>
+            Gets the width span.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.Alignment">
+            <summary>
+            Gets the formatted width value, or null if the value is not available.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.FormatSpan">
+            <summary>
+            Gets the format span.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.Format">
+            <summary>
+            Gets the format value.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.Source">
+            <summary>
+            Gets the complete source string.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.StartIndex">
+            <summary>
+            Gets the segment start index within the source string.
+            </summary>
+        </member>
+        <member name="P:Vertical.SpectreLogger.Templates.TemplateSegment.Length">
+            <summary>
+            Gets the length of the segment.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateSegment.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:Vertical.SpectreLogger.Templates.TemplateString">
+            <summary>
+            Defines methods to parse templates.
+            </summary>
+        </member>
+        <member name="M:Vertical.SpectreLogger.Templates.TemplateString.Split(System.String,Vertical.SpectreLogger.Templates.TemplateCallback)">
+            <summary>
+            Splits a string into template segments.
+            </summary>
+            <param name="str">String to split.</param>
+            <param name="callback">A callback that receives each <see cref="T:Vertical.SpectreLogger.Templates.TemplateSegment"/></param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="str"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="callback"/> is null.</exception>
+        </member>
+    </members>
+</doc>

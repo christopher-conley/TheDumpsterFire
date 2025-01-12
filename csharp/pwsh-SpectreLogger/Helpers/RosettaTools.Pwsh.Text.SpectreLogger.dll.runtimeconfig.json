@@ -1,0 +1,26 @@
+{
+  "runtimeOptions": {
+    "configProperties": {
+      "System.Runtime.Loader.UseRuntimeAssemblyBindingContext": true
+    },
+    "framework": {
+      "name": "Microsoft.NETCore.App",
+      "version": "8.0.0"
+    },
+    "rollForward": "Major",
+    "dependentAssembly": {
+      "Microsoft.Extensions.ObjectPool": {
+        "assemblyVersion": "9.0.0.0",
+        "fileVersion": "9.0.24.52903"
+      },
+      "System.Text.Json.dll": {
+        "assemblyVersion": "9.0.0.0",
+        "fileVersion": "9.0.24.52809"
+      },
+      "System.Diagnostics.DiagnosticSource.dll": {
+        "assemblyVersion": "9.0.0.0",
+        "fileVersion": "9.0.24.52809"
+      }
+    }
+  }
+}
