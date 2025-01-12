@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>doccvar</Title>
+      <Author>Christopher Conley</Author>
+      <Description>Generates a skeleton XML &lt;summary&gt; documentation block for a class variable</Description>
+      <HelpUrl></HelpUrl>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Keywords>
+        <Keyword></Keyword>
+      </Keywords>
+      <Shortcut>doccvar</Shortcut>
+    </Header>
+    <Snippet>
+      <References />
+      <Imports />
+      <Declarations />
+      <Code Language="CSharp" Kind="any" Delimiter="$"><![CDATA[
+/// <summary>
+/// <see langword="private" /> class variable backing the <see cref="AssociatedClassProperty"/> <see langword="public" /> property.
+/// <br>Contains a <see cref="SomeCSharpType" /> instance that does some stuff.</br>
+/// <br></br><br>See also: <seealso cref="AssociatedClassProperty"/></br>
+/// </summary>
+]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
