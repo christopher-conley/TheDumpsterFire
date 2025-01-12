@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Chainwax.CLI": {
+      "commandName": "Project"
+    },
+    "Create symlink": {
+      "commandName": "Project",
+      "commandLineArgs": "add symlink --target \"E:\\rust\\cargo\\bin\\viddy.exe\" --link-name \"C:\\Users\\tool\\viddy.exe\""
+    },
+    "Test": {
+      "commandName": "Project",
+      "commandLineArgs": "test log -m \"this is a test\""
+    }
+  }
+}

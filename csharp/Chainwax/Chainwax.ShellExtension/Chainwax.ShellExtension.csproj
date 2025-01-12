@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableComHosting>true</EnableComHosting>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\rosettast0ned_sn.snk</AssemblyOriginatorKeyFile>
+    <RootNamespace>Chainwax.ShellExtension</RootNamespace>
+    <AssemblyName>Chainwax.ShellExtension</AssemblyName>
+    <AssemblyTitle>Chainwax.ShellExtension</AssemblyTitle>
+    <AssemblyVersion>2024.12.30</AssemblyVersion>
+    <Authors>Christopher Conley</Authors>
+    <Company>Rosetta Stoned Software</Company>
+    <Description>Symlinks should be easy to make for everyone.</Description>
+    <Copyright>Copyright (c) 2024-2025 Christopher Conley</Copyright>
+    <InformationalVersion>$(AssemblyVersion)</InformationalVersion>
+    <Product>Chainwax.ShellExtension</Product>
+    <Version>$(AssemblyVersion)</Version>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <ApplicationIcon>Assets\chainwax.ico</ApplicationIcon>
+    <Title>Chainwax.ShellExtension</Title>
+    <PackageIcon>chainwax.png</PackageIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\chainwax.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\chainwax.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\chainwax.png" />
+    <EmbeddedResource Include="Assets\chainwax_16x16.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\external\ServerManager\ServerManager.csproj" />
+    <ProjectReference Include="..\external\ServerRegistrationManager\ServerRegistrationManager.csproj" />
+    <ProjectReference Include="..\external\SharpShell\SharpShell.csproj" />
+  </ItemGroup>
+
+</Project>

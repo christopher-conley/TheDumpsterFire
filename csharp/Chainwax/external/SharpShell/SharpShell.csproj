@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <OutputType>Library</OutputType>
+    <UseWindowsForms>True</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
+    <Description>SharpShell is a framework that lets you build Windows Shell Extensions using .NET</Description>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="SharpPreviewHandler\PreviewHandlerControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="SharpPropertySheet\SharpPropertyPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="NativeBridge\SharpShellNativeBridge32.dll" />
+    <EmbeddedResource Include="NativeBridge\SharpShellNativeBridge64.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.ComponentModel.Composition" Version="9.0.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.0" />
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)artifacts\build\SharpShell" />
+  </Target>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>SharpShell.Tests, PublicKey="0024000004800000940000000602000000240000525341310004000001000100fdbcb0cdaebf9bb65494552e5ca20ddae849ac94b8a14a02cee7fa7594bcaf918a8e89dabd1b1b29f5ef542253409a00ddf7055d1208a21d6b41f4b9b49ccac58beba7413f3ba74f10671ceae891f6e62bb9f504198ae30e9318bc3cfd0e4966dcc041b9b339b36ec893bf3e452add7d719958d36e7627b4b4e4835b2f07aba7</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>ServerRegistrationManager, PublicKey="0024000004800000940000000602000000240000525341310004000001000100a5981b638f37c9bdd36af30b4a7c34b7e8fce33c5e424f37538f7dbd4e108c12909a2efcc4a2eb6dd4ef509cb53443a07f90504a7c8ec1a51813bd6696d21ab20d68d823ef8e840a3c4cdcf95c21122e153b389566c23c20f8e58fa4d15c810538443a303e6049d3ce9c8e589bb2277fab465f8bb2cfd2e4740688bc8f5b95e7</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

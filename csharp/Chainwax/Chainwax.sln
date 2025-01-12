@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chainwax.CLI", "Chainwax.CLI\Chainwax.CLI.csproj", "{F5407D74-7891-4082-A77F-A20944C4E78D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chainwax.GUI", "Chainwax.GUI\Chainwax.GUI.csproj", "{F692960B-3E5C-42A2-A5F1-085296658981}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chainwax.ShellExtension", "Chainwax.ShellExtension\Chainwax.ShellExtension.csproj", "{4FFCE8A2-DA6A-4BF1-B90B-66A1C453F383}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpShell", "external\SharpShell\SharpShell.csproj", "{E0587080-55B9-4E93-903E-290B0B653611}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerManager", "external\ServerManager\ServerManager.csproj", "{06CF5ECF-06CF-4231-8E93-336D605D4F95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerRegistrationManager", "external\ServerRegistrationManager\ServerRegistrationManager.csproj", "{ABBFE6A4-0BC8-48D6-BE75-E272B63B635A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F5407D74-7891-4082-A77F-A20944C4E78D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5407D74-7891-4082-A77F-A20944C4E78D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5407D74-7891-4082-A77F-A20944C4E78D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5407D74-7891-4082-A77F-A20944C4E78D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F692960B-3E5C-42A2-A5F1-085296658981}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F692960B-3E5C-42A2-A5F1-085296658981}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F692960B-3E5C-42A2-A5F1-085296658981}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F692960B-3E5C-42A2-A5F1-085296658981}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FFCE8A2-DA6A-4BF1-B90B-66A1C453F383}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FFCE8A2-DA6A-4BF1-B90B-66A1C453F383}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FFCE8A2-DA6A-4BF1-B90B-66A1C453F383}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FFCE8A2-DA6A-4BF1-B90B-66A1C453F383}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0587080-55B9-4E93-903E-290B0B653611}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0587080-55B9-4E93-903E-290B0B653611}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0587080-55B9-4E93-903E-290B0B653611}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0587080-55B9-4E93-903E-290B0B653611}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06CF5ECF-06CF-4231-8E93-336D605D4F95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06CF5ECF-06CF-4231-8E93-336D605D4F95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06CF5ECF-06CF-4231-8E93-336D605D4F95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06CF5ECF-06CF-4231-8E93-336D605D4F95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABBFE6A4-0BC8-48D6-BE75-E272B63B635A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABBFE6A4-0BC8-48D6-BE75-E272B63B635A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABBFE6A4-0BC8-48D6-BE75-E272B63B635A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABBFE6A4-0BC8-48D6-BE75-E272B63B635A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <LangVersion>12.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Title>Chainwax</Title>
+    <Authors>Christopher Conley</Authors>
+    <AssemblyVersion>2024.12.27.0505</AssemblyVersion>
+    <FileVersion>2024.12.27.0505</FileVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SignAssembly>True</SignAssembly>
+    <DelaySign>False</DelaySign>
+    <AssemblyOriginatorKeyFile>..\rosettast0ned_sn.snk</AssemblyOriginatorKeyFile>
+    <ApplicationIcon>Assets\chainwax.ico</ApplicationIcon>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <PackageIcon>chainwax_link-duotone_wax_drop_shadow_256x256.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Copyright>Copyright (c) 2024-2025 Christopher Conley</Copyright>
+    <InformationalVersion>$(AssemblyVersion)</InformationalVersion>
+    <ProductName>Chainwax.CLI</ProductName>
+    <ProductVersion>$(AssemblyVersion)</ProductVersion>
+    <Version>$(AssemblyVersion)</Version>
+    <Guid>F90E40BC-6290-DEAD-BEEF-0E45F93BB760</Guid>
+    <StartupObject>Chainwax.CLI.Bootstrap</StartupObject>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\chainwax.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\figlet-fonts\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.49.2-preview.0.68" />
+    <PackageReference Include="Spectre.Console.ImageSharp" Version="0.49.2-preview.0.68" />
+    <PackageReference Include="Spectre.Console.Json" Version="0.49.2-preview.0.68" />
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="vertical-spectreconsolelogger" Version="0.10.1-dev.20241201.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\chainwax_link-duotone_wax_drop_shadow_256x256.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+
+    <None Update="LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
