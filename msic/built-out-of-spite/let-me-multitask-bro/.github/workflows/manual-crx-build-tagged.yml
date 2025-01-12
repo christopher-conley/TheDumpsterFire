@@ -1,0 +1,78 @@
+name: Manual CRX build
+run-name: Building CRX Release
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-crx-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Set version ENV variable
+        run: echo "LMMB_VERSION=$(cat ${{ github.workspace }}/VERSION)" >> $GITHUB_ENV
+      - name: Create key for Chrome
+        run: echo "${{ secrets.CHROME_CRX_PRIVATE_KEY }}" >${{ runner.temp }}/signing-key.pem
+      - name: Install Chrome, pack and sign extension
+        #id: chrome_stuff
+        uses: browser-actions/setup-chrome@v1
+      - run: chrome --pack-extension=${{ github.workspace }}/chrome-extension/src --pack-extension-key=${{ runner.temp }}/signing-key.pem
+      - run: rm -f ${{ runner.temp }}/signing-key.pem
+      - run: mv ${{ github.workspace }}/chrome-extension/src.crx ${{ github.workspace }}/chrome-extension/let-me-multitask-bro-${{ env.LMMB_VERSION }}.crx
+
+      - id: build_artifact_latest
+        name: Build latest release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.RELEASES_OAUTH_TOKEN }}"
+          automatic_release_tag: "latest"
+          title: "Latest ${{ env.LMMB_VERSION }}"
+          files: |
+            ${{ github.workspace }}/chrome-extension/let-me-multitask-bro-${{ env.LMMB_VERSION }}.crx
+          if: ${{ (contains(github.ref_type, 'tag') && startsWith(github.ref_name, 'v') ) }}
+          prerelease: false
+
+      - id: build_artifact_release
+        name: Build release
+        if: ${{ startsWith(github.ref_name, 'v') }}
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.RELEASES_OAUTH_TOKEN }}"
+          automatic_release_tag: ${{ github.ref_name }}
+          prerelease: false
+          title: "Release ${{ env.LMMB_VERSION }}"
+          files: |
+            ${{ github.workspace }}/chrome-extension/let-me-multitask-bro-${{ env.LMMB_VERSION }}.crx
+
+      - id: build_artifact_devel
+        name: Build devel release
+        if: ${{ !startsWith(github.ref_name, 'v') }}
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.RELEASES_OAUTH_TOKEN }}"
+          automatic_release_tag: ${{ github.ref_name }}
+          prerelease: true
+          title: "Devel ${{ env.LMMB_VERSION }}"
+          files: |
+            ${{ github.workspace }}/chrome-extension/let-me-multitask-bro-${{ env.LMMB_VERSION }}.crx
+
+
+
+
+
+
+
+
+
+#run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+      #- run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      #- run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      #- run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      #- run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      #- run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      #- name: List files in the repository
+      #  run: |
+      #    ls ${{ github.workspace }}
+      #- run: echo "🍏 This job's status is ${{ job.status }}."

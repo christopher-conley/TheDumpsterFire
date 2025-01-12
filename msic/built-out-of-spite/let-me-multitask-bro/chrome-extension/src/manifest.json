@@ -1,0 +1,31 @@
+{
+    "manifest_version": 3,
+    "name": "Let Me Multitask, Bro",
+    "description": "A Chrome extension that allows picture-in-picture mode to be used for videos, even if the website has disabled it.",
+    "version": "0.2.1",
+    "author": {
+        "email": "software@rosettast0ned.com"
+    },
+    "homepage_url": "https://github.com/rosettast0ned/let-me-multitask-bro",
+    "incognito": "split",
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "all_frames": true,
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "icons": {
+        "16": "let_me_multitask_bro16.png",
+        "32": "let_me_multitask_bro32.png",
+        "48": "let_me_multitask_bro48.png",
+        "128": "let_me_multitask_bro128.png"
+    },
+    "action": {
+        "default_icon": "let_me_multitask_bro.png"
+    }
+}

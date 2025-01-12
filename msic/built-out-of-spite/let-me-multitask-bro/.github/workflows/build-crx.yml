@@ -1,0 +1,27 @@
+name: build-crx
+
+on:
+  push:
+    branches: 
+      - main
+
+jobs:
+  build-crx:
+    name: build-crx-file
+    runs-on: ubuntu-latest
+    steps:
+      - id: packExtensionDir
+        uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
+        with:
+          extensionDir: 'chrome-extension/src'
+          zipFilePath: 'chrome-extension/zip/let-me-multitask-bro.zip'
+
+      - uses: cardinalby/webext-buildtools-chrome-crx-action@v2
+        with:
+          # zip file made at the packExtensionDir step
+          zipFilePath: 'chrome-extension/zip/let-me-multitask-bro.zip'
+          crxFilePath: 'chrome-extension/crx/let-me-multitask-bro.crx'
+          privateKey: ${{ secrets.CHROME_CRX_PRIVATE_KEY }}
+          # The following is optional if you need update.xml file
+          updateXmlPath: 'crx/update.xml'
+          updateXmlCodebaseUrl: 'https://raw.githubusercontent.com/rosettast0ned/let-me-multitask-bro/main/chrome-extension/crx/let-me-multitask-bro.crx'
