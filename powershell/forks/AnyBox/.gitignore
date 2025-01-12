@@ -1,0 +1,9 @@
+.vs
+.vscode
+thumbs.db
+*.pssproj
+*.sln
+.DS_Store
+.Rhistory
+publish.ps1
+publish/
