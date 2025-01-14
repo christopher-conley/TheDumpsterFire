@@ -14,8 +14,8 @@
     <!-- Major Upgrade Rule to disallow downgrades -->
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <!-- Uncomment below two lines to require .NET 4.8 or Later to install -->
-    <!-- <PropertyRef Id="WIX_IS_NETFRAMEWORK_48_OR_LATER_INSTALLED" /> -->
-    <!-- <Launch Condition="Installed OR WIX_IS_NETFRAMEWORK_48_OR_LATER_INSTALLED" Message="[ProductName] requires .NET Framework 4.8 or later." /> -->
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_48_OR_LATER_INSTALLED" />
+    <Launch Condition="Installed OR WIX_IS_NETFRAMEWORK_48_OR_LATER_INSTALLED" Message="[ProductName] requires .NET Framework 4.8 or later." />
     <Icon Id="Icon.ico" SourceFile="Resources\Icon.ico" />
     <Property Id="ARPPRODUCTICON" Value="Icon.ico"></Property>
     <Property Id="DISABLEADVTSHORTCUTS" Value="1"></Property>
@@ -25,7 +25,7 @@
         <Directory Id="INSTALLLOCATION" Name="KeysCmd" />
       </Directory>
     </StandardDirectory>
-    <Feature Id="KeysCmd" Title="KeysCmd" Description="Installs all the files needed for KeysCmd" Level="1" AllowAdvertise="no" ConfigurableDirectory="INSTALLLOCATION" Display="expand" AllowAbsent="no" TypicalDefault="install">
+    <Feature Id="KeysCmd" Title="KeysCmd" Description="Fetch user SSH public keys from Active Directory." Level="1" AllowAdvertise="no" ConfigurableDirectory="INSTALLLOCATION" Display="expand" AllowAbsent="no" TypicalDefault="install">
       <ComponentGroupRef Id="Harvestednet48Publish" />
       <!-- Uncomment the below line to pull in IIS Metadata.  Otherwise delete if not needed -->
       <!--<ComponentGroupRef Id="webSite" />-->

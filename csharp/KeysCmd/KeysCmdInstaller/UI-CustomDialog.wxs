@@ -16,7 +16,7 @@
           <Publish Event="NewDialog" Value="CustomizeDlg" />
         </Control>
         <Control Id="Cancel" Type="PushButton" Text="Cancel" TabSkip="no" Height="17" Width="56" X="304" Y="243" Cancel="yes">
-          <Publish Event="SpawnDialog" Value="CancelDlg" />
+          <Publish Event="SpawnDialog" Value="CancelDlg_Custom" />
         </Control>
         <Control Id="Back" Type="PushButton" Text="&amp;Back" TabSkip="no" Height="17" Width="56" X="180" Y="243">
           <Publish Event="NewDialog" Value="LicenseAgreementDlg" />
