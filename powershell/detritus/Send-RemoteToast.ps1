@@ -1,9 +1,9 @@
 function Send-RemoteToast
 {
     [Alias("Send-Toast")]
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low')]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low', DefaultParameterSetName = 'Local')]
     param (
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [ValidateScript( { $_ -is [string] } )]
         [AllowNull()]
         [string] $AppID,
@@ -36,166 +36,178 @@ function Send-RemoteToast
         [ValidateScript( { $_ -is [switch] } )]
         [switch] $NullActivity = $false,
 
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Remote')]
         [ValidateScript( { $_ -is [string] } )]
-        [AllowNull()]
         [string] $Computer,
 
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Local')]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'Remote')]
         [ValidateScript( { $_ -is [PSCredential] } )]
         [AllowNull()]
         [PSCredential] $Credential
 
     )
 
-    [bool] $HostIsWindows = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)
-    [bool] $IsRemoteCommand = if (
-        !([string]::IsNullOrWhiteSpace($Computer))
-    )
+    begin
     {
-        $true
-    }
-    else
-    {
-        $false
-    }
 
-    # It is so unbelievably gross that you can do this kind of assignment in PowerShell
-    # It's like the poorest of the Poor Man's Lambda Expressions
-    [bool] $IsAdmin = if ($PSVersionTable.PSVersion -ge [version]'7.4')
-    {
-        [System.Environment]::IsPrivilegedProcess
-    }
-    else
-    {
-        if ($HostIsWindows)
+        [bool] $HostIsWindows = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)
+    
+        # It is so unbelievably gross that you can do this kind of assignment in PowerShell
+        # It's like the poorest of the Poor Man's Lambda Expressions
+        [bool] $IsAdmin = if ($PSVersionTable.PSVersion -ge [version]'7.4')
         {
-            [Security.Principal.WindowsPrincipal]::new(
-                [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
-                [Security.Principal.WindowsBuiltinRole]::Administrator
-            )
+            [System.Environment]::IsPrivilegedProcess
         }
         else
         {
-            ((& id -u) -eq 0)
+            if ($HostIsWindows)
+            {
+                [Security.Principal.WindowsPrincipal]::new(
+                    [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+                    [Security.Principal.WindowsBuiltinRole]::Administrator
+                )
+            }
+            else
+            {
+                ((& id -u) -eq 0)
+            }
         }
-    }
-
-    [bool] $CredentialWasProvided = ($null -ne $Credential)
-
-    if ([string]::IsNullOrWhiteSpace($AppID))
-    {
-        # Must use the Known Folder GUID for this, an absolute path will not work
-        # https://learn.microsoft.com/en-us/windows/win32/shell/knownfolderid
-
-        $AppID = "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe"
-    }
-
-    if ($NullActivity)
-    {
-        $ActionButtonActivity = $null
-    }
-
-    [string] $MessageTemplate = @"
-    <toast duration="$Duration">
-        <visual>
-            <binding template="ToastGeneric">
-                <text>$Title</text>
-                <text>$MessageContent</text>
-            </binding>
-        </visual>
-        <actions>
-            <action activationType="protocol" arguments="$ActionButtonActivity" content="$ActionButtonLabel" />
-        </actions>
-    </toast>
-"@
-
-    Write-Debug -Message "Message template is: $MessageTemplate"
-
-    [ScriptBlock] $GrossToast = {
-        param (
-            [string]
-            $AppID,
     
-            [string]
-            $MessageTemplate
-        )
-
-        $DisplayPSSession = $null
-        if ($PSVersionTable.PSVersion.Major -eq 7)
+        [bool] $CredentialWasProvided = ($Credential -ne $null)
+    
+        if ([string]::IsNullOrWhiteSpace($AppID))
         {
-            $DisplayPSSession = New-PSSession -UseWindowsPowerShell
+            # Must use the Known Folder GUID for this, an absolute path will not work
+            # https://learn.microsoft.com/en-us/windows/win32/shell/knownfolderid
+    
+            $AppID = "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe"
         }
     
-        [ScriptBlock] $PreparedToast = {
+        if ($NullActivity)
+        {
+            $ActionButtonActivity = $null
+        }
+    
+        [string] $MessageTemplate = @"
+        <toast duration="$Duration">
+            <visual>
+                <binding template="ToastGeneric">
+                    <text>$Title</text>
+                    <text>$MessageContent</text>
+                </binding>
+            </visual>
+            <actions>
+                <action activationType="protocol" arguments="$ActionButtonActivity" content="$ActionButtonLabel" />
+            </actions>
+        </toast>
+"@
+    
+        Write-Debug -Message "Message template is: $MessageTemplate"
+
+        [ScriptBlock] $GrossToast = {
             param (
                 [string]
-                $XMLTemplate,
-
-                [string]
-                $FromApp
-            )
-
-            [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
-            [Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
-            [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
-            [Windows.Data.Xml.Dom.XmlDocument] $NotificationObject = New-Object Windows.Data.Xml.Dom.XmlDocument
-            $NotificationObject.LoadXml($XMLTemplate)
+                $AppID,
         
-            [Windows.UI.Notifications.ToastNotification] $ToastNotification = New-Object Windows.UI.Notifications.ToastNotification -ArgumentList $NotificationObject
-            [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($FromApp).Show($ToastNotification)
+                [string]
+                $MessageTemplate
+            )
+    
+            $DisplayPSSession = $null
+            if ($PSVersionTable.PSVersion.Major -eq 7)
+            {
+                $DisplayPSSession = New-PSSession -UseWindowsPowerShell
+            }
+        
+            [ScriptBlock] $PreparedToast = {
+                param (
+                    [string]
+                    $XMLTemplate,
+    
+                    [string]
+                    $FromApp
+                )
+    
+                [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+                [Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+                [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+                [Windows.Data.Xml.Dom.XmlDocument] $NotificationObject = New-Object Windows.Data.Xml.Dom.XmlDocument
+                $NotificationObject.LoadXml($XMLTemplate)
+            
+                [Windows.UI.Notifications.ToastNotification] $ToastNotification = New-Object Windows.UI.Notifications.ToastNotification -ArgumentList $NotificationObject
+                [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($FromApp).Show($ToastNotification)
+            }
+    
+            if ($PSVersionTable.PSVersion.Major -eq 7)
+            {
+                Invoke-Command -ScriptBlock $PreparedToast -ArgumentList @("$MessageTemplate", $AppID) -Session $DisplayPSSession
+            }
+    
+            else
+            {
+                Invoke-Command -ScriptBlock $PreparedToast -ArgumentList @("$MessageTemplate", $AppID)
+            }
+    
         }
 
-        if ($PSVersionTable.PSVersion.Major -eq 7)
+        [array] $ArgsArray = @(
+            "$AppID",
+            "$MessageTemplate"
+        )
+    
+        [hashtable] $InvokeSplat = [ordered]@{
+            ScriptBlock  = $GrossToast
+            ArgumentList = $ArgsArray
+        }
+
+        if ($CredentialWasProvided)
         {
-            Invoke-Command -ScriptBlock $PreparedToast -ArgumentList @("$MessageTemplate", $AppID) -Session $DisplayPSSession
+            $InvokeSplat.Add("Credential", $Credential)
         }
+    }
 
+    process
+    {
+
+        if ($PSCmdlet.ParameterSetName -eq 'Remote')
+        {
+            $InvokeSplat.Add("ComputerName", $Computer)
+    
+            if ($PSCmdlet.ShouldProcess("Send-RemoteToast", "Sending toast notification to remote endpoint"))
+            {
+                Write-Verbose -Message "Sending remote toast notification to remote endpoint: $Computer"
+                Invoke-Command @InvokeSplat
+            }
+        }
+    
         else
         {
-            Invoke-Command -ScriptBlock $PreparedToast -ArgumentList @("$MessageTemplate", $AppID)
-        }
+            Write-Verbose -Message "Endpoint not specificed, sending toast notification to local machine"
+            if ($CredentialWasProvided)
+            {
+                # It's necessary to add the computer name to the hashtable for the local invocation if a credential
+                # was provided. It's an ambiguous call to 'Invoke-Command' that will throw a terminating error otherwise
+                Write-Verbose -Message "Adding local computer name to `"Invoke-Command`" argument list since credential was provided"
+                $InvokeSplat.Add("ComputerName", [Environment]::MachineName)
 
-    }
-
-    [array] $ArgsArray = @(
-        "$AppID",
-        "$MessageTemplate"
-    )
-
-    [hashtable] $InvokeSplat = [ordered]@{
-        ScriptBlock  = $GrossToast
-        ArgumentList = $ArgsArray
-    }
-
-    if ($CredentialWasProvided)
-    {
-        $InvokeSplat.Add("Credential", $Credential)
-    }
-
-    if ($IsRemoteCommand)
-    {
-        $InvokeSplat.Add("ComputerName", $Computer)
-
-        if ($PSCmdlet.ShouldProcess("Send-RemoteToast", "Sending toast notification to remote endpoint"))
-        {
-            Write-Verbose -Message "Sending remote toast notification to remote endpoint: $Computer"
+                if (($IsAdmin -eq $false))
+                {
+                    [string] $WarningMessage = "Credential provided for a local toast notification, but PowerShell process is not running as administrator. "
+                    $WarningMessage += "Toast notification attempt will most likely fail."
+                    Write-Warning -Message $WarningMessage
+                }
+    
+            }
             Invoke-Command @InvokeSplat
         }
+
     }
 
-    else
+    end
     {
-        Write-Verbose -Message "Endpoint not specificed, sending toast notification to local machine"
-        if ($CredentialWasProvided -and ($IsAdmin -eq $false))
-        {
-            $InvokeSplat.Add("ComputerName", $env:COMPUTERNAME)
-            [string] $WarningMessage = "Credential provided for a local toast notification, but PowerShell process is not running as administrator. "
-            $WarningMessage += "Toast notification attempt will most likely fail."
-            Write-Warning -Message $WarningMessage
 
-        }
-        Invoke-Command @InvokeSplat
+
     }
 
 }
@@ -215,11 +227,12 @@ function Send-RemoteToast
 
 
 
+
 # SIG # Begin signature block
 # MIIonwYJKoZIhvcNAQcCoIIokDCCKIwCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBBscKKBWaPiv94
-# zSUzwTfZ/+/eSrIUzhgRHRGTk8XxgaCCDaUwgga5MIIEoaADAgECAhEAmaOACiZV
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD+H8v8OKKfu9Zt
+# 7Gyvwd/j51weGUZxaHIMQKEOhjUR2aCCDaUwgga5MIIEoaADAgECAhEAmaOACiZV
 # O2Wr3G6EprPqOTANBgkqhkiG9w0BAQwFADCBgDELMAkGA1UEBhMCUEwxIjAgBgNV
 # BAoTGVVuaXpldG8gVGVjaG5vbG9naWVzIFMuQS4xJzAlBgNVBAsTHkNlcnR1bSBD
 # ZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTEkMCIGA1UEAxMbQ2VydHVtIFRydXN0ZWQg
@@ -297,22 +310,22 @@ function Send-RemoteToast
 # Q29kZSBTaWduaW5nIDIwMjEgQ0ECEDtTlpcWV2y1yyFbCDsgwpowDQYJYIZIAWUD
 # BAIBBQCgfDAQBgorBgEEAYI3AgEMMQIwADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgPkATQUqwAY6MipQF6YVEZDvRrFnsBMuORMU5ZXqGdj4wDQYJKoZIhvcNAQEB
-# BQAEggIAF81RCW5GWbqybH4CYsCuCXf3WqNtIc1NbSA43NiUf+I5Aylfoyr6tmyZ
-# fKuNW438Mz+u2u4ZwtKS8qEqNDkFRcQYfhaqWghwCu8ziIEjPfrTZV5cjjMagYDy
-# pxW6jF06mLoueAdVEbvyQLuB3leUIXZcB+S4fSrwR0aQ/THPhnAPlJyidwFk/xjQ
-# AufcKRrcZj2aZP9HYzL47GZ2c3E5Blru12wrLoFc5ZeFf9NPI/f7GZY8OCaNkofp
-# UUbcG5a7sMP5EZWFK+sl8LfhqiMIsFj9/nQZt7HB2OSesUlS67GKyJsWMypWIm0H
-# JBmM6ZZBHvW2YJ21q1pXJjycEpbUzZ8NU8iXjk8VG6El+P2G8xmrK6jU5oYDZtiv
-# 4B42eJ+GapGFeBFftgy/ASFX1J2s1sgwR7Uly1gaoetB3uauFKImxwyCH+dFS5KL
-# O09fGW3RvuviwG0IJnYiJiEZfDvX2Qmf5ylCRZVzjRFy4c+SBDd098xnLlzWpC65
-# aUc2pEFcztsxzL0dykTGBuRvwY2EGepYHl2L9BpnPIVWp31aDCUuL514/yegP8xg
-# SkP3MeAoM3lnbq/qPXrDogejxSyYAgKokh/mF9a7oKG8t2Twkb9J4Mx3nKO9GFge
-# aZdGYZ1lMSKMRr5+EewCiD5GTUDlv1aJu+gNhdsJCJmEIwhXHcehghc5MIIXNQYK
+# IgQgCLkVY2yGd3Khljo6eDUNBXsSqnOHq0P83KUYj7dga00wDQYJKoZIhvcNAQEB
+# BQAEggIAFTsNlFx3pLNx/U0awZ9n7ndOMdEq3I0GDEYbOgMwoVEHQQ3dJ9dk+klQ
+# rzshCw2KXh8smdjXvFYQ8guR5uTp4OZAELpoNLjZGUzsO8SbOzUuDbftAOIv2eQV
+# IMm/B5TDVY/gh5seLOmPE1M64GatEcRCxDQzJnmseCXdv/M3Qv2IXgsFCDF1Xxm8
+# /CZU4ILHJ8qLHnQOwd4ZI2+Ym0klFthk5g3oYzXpTklQo2Ey99XFmaEslYPu8xFq
+# vjIy3Glg2EtL4YOoq4gcQOcUrU+rxYlsIxufTwh/zfXCC4xSD/lopbk3tav7QZ8o
+# egKvtwH1mD9U1V7Ue1MjuH/q2UJgUBOV8YS4qLPxn1aEbu26KYVwnAKcgeAYlZv0
+# 4IyimAbvbBZW0nLHiV3rlaOVSFGJVcilmBbOM4Gj1HOGxHR3DlQLT9ZzqBY51z8N
+# P/ImWn3LzZO7PxjeuDKh5bAcWCUsKRsYsJI8wR4VaS7uRV9aACmLNypm/wKUkoLi
+# x9W+DAcXSXanysYDwKUNVszfleCtvDAOXo/l9uZkgX5OkbfYJMG1Y9QFdTBr3Nad
+# A0DJ1sqITCa2IruclPp1dlxnYSkDYizCru2LIIeZ9LQbuXLss/uue4Ocy9A6kYYk
+# JixTsdV7k5DgUkTFC5/uyqsL9JQI6zB7nE/WBj+QVy8VOyQiuhOhghc5MIIXNQYK
 # KwYBBAGCNwMDATGCFyUwghchBgkqhkiG9w0BBwKgghcSMIIXDgIBAzEPMA0GCWCG
 # SAFlAwQCAQUAMHcGCyqGSIb3DQEJEAEEoGgEZjBkAgEBBglghkgBhv1sBwEwMTAN
-# BglghkgBZQMEAgEFAAQgBdY07hy5fwLtwyM++fLj2n75qQ3mAboVtt/Dzlc7NUkC
-# EHBB0Il3OpGuqpf3JOhF/nsYDzIwMjUwMTE2MjM0NjA1WqCCEwMwgga8MIIEpKAD
+# BglghkgBZQMEAgEFAAQgd8Jyu3mdqET5lb15Ezn4GaPYuASpwqLDVm2n0KtgiwkC
+# EHGlT9T2/DekbmXj1AVQKzQYDzIwMjUwMTE3MTUzMjU1WqCCEwMwgga8MIIEpKAD
 # AgECAhALrma8Wrp/lYfG+ekE4zMEMA0GCSqGSIb3DQEBCwUAMGMxCzAJBgNVBAYT
 # AlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE7MDkGA1UEAxMyRGlnaUNlcnQg
 # VHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBUaW1lU3RhbXBpbmcgQ0EwHhcNMjQw
@@ -418,19 +431,19 @@ function Send-RemoteToast
 # RGlnaUNlcnQsIEluYy4xOzA5BgNVBAMTMkRpZ2lDZXJ0IFRydXN0ZWQgRzQgUlNB
 # NDA5NiBTSEEyNTYgVGltZVN0YW1waW5nIENBAhALrma8Wrp/lYfG+ekE4zMEMA0G
 # CWCGSAFlAwQCAQUAoIHRMBoGCSqGSIb3DQEJAzENBgsqhkiG9w0BCRABBDAcBgkq
-# hkiG9w0BCQUxDxcNMjUwMTE2MjM0NjA1WjArBgsqhkiG9w0BCRACDDEcMBowGDAW
-# BBTb04XuYtvSPnvk9nFIUIck1YZbRTAvBgkqhkiG9w0BCQQxIgQgiQJITs9NA+tW
-# zbcvRptUuIv2HFG0bsHONo4k6yinnpswNwYLKoZIhvcNAQkQAi8xKDAmMCQwIgQg
+# hkiG9w0BCQUxDxcNMjUwMTE3MTUzMjU1WjArBgsqhkiG9w0BCRACDDEcMBowGDAW
+# BBTb04XuYtvSPnvk9nFIUIck1YZbRTAvBgkqhkiG9w0BCQQxIgQgbX4KuQcD84ho
+# 5pi/LSWxu2TPOep1JDlCF9coyHUevs4wNwYLKoZIhvcNAQkQAi8xKDAmMCQwIgQg
 # dnafqPJjLx9DCzojMK7WVnX+13PbBdZluQWTmEOPmtswDQYJKoZIhvcNAQEBBQAE
-# ggIAHPFtA7I6HGbWLdh4kr2IqhpOcSJFSoXn/ZWcVaG486y6vtWD17nwrqetsYCX
-# d/c98DyB1o5q4CVKEvzdxONjib/c5h5gGofNViRqaFnbmAFNcaNV8/G3eiW5VH9t
-# dnBdJpC+joxv5teRrkrsMZg78XCrElfgk6/h+0NX0Z7AiNoLI3r63iemrpQlDOg8
-# HBISTQdtMuOGGdX9voTbZXWLgdIFYBUOy/jVEV6Q5cyAaCZNzlnyWYA9RgIa8adf
-# Gl1qMiuTqCIN/sLBQp8sHuNJ++chORvmYaIfCv8Fz4JgXJO+0yj8h/fUznIxXU5G
-# NVJYA3oQOO1zyQTszL73UTmJNSsqaaxRZNsluxQTxItXDTeOR8/ffS85csINSfsP
-# 7dOfxEqYivdtbJP7OjdbNyVw4kmZSEnqju45NI3BPgGEI8D49hLYSyuXhA9QdKaQ
-# IWNgSUYaRNEL2Xeb2DSKBr9S7+hyATzH1e0aVsCtg1JfBckGsQg5zzh8IwQFAPv6
-# Y5XjTczOP7j4EmGWMeHCE36to1PjqlvZiqFhLAEDOf+LAG/qdmyAA3u+/9fBs17y
-# D8GsxrS3LJYsWlEQCn4AtgZKoxnzxmgUWcq2lKlmhQE3JjEpl6+avxFbJQ4F+HzO
-# f0G5oYRDpAJ2hc+FYGYKQilIzfOZn5zOF3uVaWdVPY/ifj4=
+# ggIAM/qH7a9p76u/pvz2UO9B+I1TSSxnYVCdg3NKXxJc5szZxfHc0ts1JPjxlVZ3
+# FbdhQYuYTfICC8S/t2+8u4l8CE586SfHwT6Q3qDn6FpcbBXMYu4vqaZsn7CvC6zF
+# yEwRZJo12uIV32p1z13pb2q5akOzUNYcZPbxQ2o+W0W1KBHGDzwLX0hLIWnrM/Iw
+# D02BLES9lWcpY5m4MsRKVtaSaClaV+ZM1sGjkbIH2qV/IcEtHfO7jHXop4g/x7V+
+# O/lW3QM2dWK+2VAEnV10M2c0K4/HmegryvApseS21rFLcgy/BmeSww6pRqmtGPvn
+# BHsIpGjVeSjIMoUVr+ZPedOOM1LmR4i0tVZ7xLHzF+tVwYba8ZDWhkLjgs9QD6Cl
+# 8TCKiJSWzZ5vU7jYcKnNwIA5jamTI/Cw9lz8SNtW876uKOFu2PfScrm8ijzXGi1c
+# 9uhkil/xT25Xgl2yVvbvmxZW7h7mmU2ANEhDNSRxjbCvH1oQErLQoIQLuSORhPa8
+# qCaKcqSXl3MJNvzgV9UmZXMjyz+xn1ppiboi7fgovLtatT+ybGQNDVxaYDxNUzmb
+# 0I3WE02ZEfIGuXVd+6ZxrLU8nojtqZmlYjSXrTWal87Pp3Pg/BWXdblKezwmI4qy
+# 4hUo2gmEGgcnYYUzzWpUtkEXApc7KmbnK/m44LKk03sG4Ds=
 # SIG # End signature block
