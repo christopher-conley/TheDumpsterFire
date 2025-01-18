@@ -110,6 +110,94 @@ namespace RosettaTools.CLI.KeysCmd.Common
         /// </summary>
         private string _os;
 
+        private readonly string _commonAppDataDir;
+
+        private readonly string _appDataDir;
+
+        /// <summary>
+        /// A <see cref="string"/> containing the path to the "CommonApplicationData" OS directory.<br></br>
+        /// This generally resolves to "C:\ProgramData" on Windows and "/usr/share" on Linux, but we're <br></br>
+        /// going to prefer "/etc" on Linux instead of the default if the <c>GetFolderPath</c> call resolves.
+        /// </summary>
+        public string CommonAppDataDir {
+            get => _commonAppDataDir;
+            init {
+                if (_isLinux)
+                {
+                    _commonAppDataDir = "/etc";
+                    return;
+                }
+
+                if (null == Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData))
+                {
+                    if (_isWindows)
+                    {
+                        _commonAppDataDir = @"C:\ProgramData";
+                    }
+                    else
+                    {
+                        throw new PlatformNotSupportedException($"The current platform: \"{RuntimeInformation.OSDescription}\" is not supported.");
+                    }
+                }
+                else
+                {
+                    _commonAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                }
+            }
+        }
+
+        /// <summary>
+        /// A <see cref="string"/> containing the path to the "ApplicationData" OS directory.<br></br>
+        /// This generally resolves to "%USERPROFILE%\AppData\Roaming" on Windows and doesn't always resolve on<br></br>
+        /// Linux, but we're going to prefer "$HOME/.config" on Linux instead of the default if the <c>GetFolderPath</c>
+        /// call does resolve.
+        /// </summary>
+
+#pragma warning disable CA1416
+        public string AppDataDir
+        {
+            get => _appDataDir;
+            init {
+                if (_isLinux)
+                {
+                    _appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config");
+                    if (Directory.Exists(_appDataDir) == false)
+                    {
+#if NET7_0_OR_GREATER
+                    Directory.CreateDirectory(_appDataDir,
+                        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                        UnixFileMode.GroupRead | UnixFileMode.GroupExecute
+                        );
+#else
+                        Directory.CreateDirectory(_appDataDir);
+#endif
+                    }
+                    return;
+                }
+
+                if (null == Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData))
+                {
+                    if (_isWindows)
+                    {
+                        _appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming");
+                        if (Directory.Exists(_appDataDir) == false)
+                        {
+                            Directory.CreateDirectory(_appDataDir);
+                        }
+                    }
+                    else
+                    {
+                        throw new PlatformNotSupportedException($"The current platform: \"{RuntimeInformation.OSDescription}\" is not supported.");
+                    }
+                }
+                else
+                {
+                    _appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                }
+            }
+        }
+#pragma warning restore CA1416
+
         /// <summary>
         /// A <see cref="DateTime"/> public property backed by the <see cref="_creationTime"/> class variable.
         /// </summary>
@@ -298,24 +386,28 @@ namespace RosettaTools.CLI.KeysCmd.Common
                 _configHome = Directory.GetCurrentDirectory();
             }
 
-            // Prefer "ProgramData" on Windows and "/etc" on Linux
-            else if (_builtinSpecialAccounts.Contains(_whoAmI))
+            else if (File.Exists(Path.Combine(CommonAppDataDir, "keyscmd", _defaultConfigFilename)))
             {
-                if (_isWindows)
-                {
-                    _configHome = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) ?? Directory.GetCurrentDirectory();
-                }
-                else
-                {
-                    _configHome = "/etc";
-                }
-                _configHome = Path.Combine(_configHome, "keyscmd");
+                _configHome = Path.Combine(CommonAppDataDir, "keyscmd");
             }
 
+            else if (File.Exists(Path.Combine((Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ?? AppDataDir), "keyscmd")))
+            {
+                _configHome = Path.Combine((Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ?? AppDataDir), "keyscmd");
+            }
             else
             {
-                _configHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                _configHome = Path.Combine(_configHome, "keyscmd");
+                // Config file doesn't exist
+                // Prefer "ProgramData" on Windows and "/etc" on Linux if running as privileged user
+                if (_builtinSpecialAccounts.Contains(_whoAmI))
+                {
+                    _configHome = Path.Combine(CommonAppDataDir, "keyscmd");
+                }
+
+                else
+                {
+                    _configHome = Path.Combine((Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ?? AppDataDir), "keyscmd");
+                }
             }
 
             _defaultConfigFile = Path.Combine(_configHome, _defaultConfigFilename);
