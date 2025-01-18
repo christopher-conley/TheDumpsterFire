@@ -83,16 +83,20 @@ The following environment variables are supported:
 
 ### Config file
 
-The application searches for its JSON configuration file in the following locations (in order of preference):
+The application searches for its JSON configuration file `keyscmd.config.json` in the following locations (in absolute order of preference):
 
-1. The same directory as the executable (highest priority, except when running as a system account)
-2. System-wide location (which takes precedence over the executable directory when running as a system account, like `NT Authority\SYSTEM`, or `root`):
+1. The same directory as the executable
+2. System-wide location:
    - Windows: `C:\ProgramData\keyscmd`
    - Linux: `/etc/keyscmd` 
-3. The directory listed in the `XDG_CONFIG_HOME` environment variable (Windows or Linux)
+3. The directory listed in the `XDG_CONFIG_HOME` environment variable + `keyscmd` (Windows or Linux)
 4. User-specific location in context of the executing user:
    - Windows: `%APPDATA%\keyscmd`
    - Linux: `~/.config/keyscmd`
+5. If a config file does not exist in any directory listed above, a new config file with default settings will be created in one of the following locations:
+   - The system-wide location listed in #2, which will be created if it does not exist (if running as an OS-default privileged user like `root`, `NT Authority\SYSTEM`, etc)
+   - The directory listed in the `XDG_CONFIG_HOME` environment variable, if it exists, + `keyscmd`
+   - The user-specific directory listed in #4, which will be created if it does not exist
 
 ### Example configuration JSON file:
 
