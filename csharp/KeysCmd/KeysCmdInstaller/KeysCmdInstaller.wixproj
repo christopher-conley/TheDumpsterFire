@@ -7,6 +7,8 @@
     <!-- If MSIProductVersion still not known, default to lowerbound 0.0.1 for developer builds.-->
     <!-- <MSIProductVersion Condition=" '$(MSIProductVersion)' == '' ">25.01.13.2259</MSIProductVersion> -->
     <!-- The following allows one cert to be referenced from the certificate store for self-signing in localbuilds and another cert to be passed in during official builds. -->
+    
+    <!-- This version is auto-set by the PowerShell script in the PreBuild event. -->
     <MSIProductVersion>25.01.15.0254</MSIProductVersion>
     <AppxCertificateThumbprint Condition=" '$(AppxCertificateThumbprint)' == '' ">
     </AppxCertificateThumbprint>
