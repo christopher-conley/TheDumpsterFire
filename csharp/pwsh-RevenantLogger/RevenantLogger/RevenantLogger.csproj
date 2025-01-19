@@ -1,0 +1,86 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>RosettaTools.Pwsh.Text.RevenantLogger</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <SignAssembly>True</SignAssembly>
+    <DelaySign>False</DelaySign>
+    <WarningsAsErrors>False</WarningsAsErrors>
+    <AssemblyOriginatorKeyFile>..\..\..\..\rosettast0ned_sn.snk</AssemblyOriginatorKeyFile>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <AssemblyName>RosettaTools.Pwsh.Text.RevenantLogger</AssemblyName>
+    <AssemblyTitle>RosettaTools.Pwsh.Text.RevenantLogger</AssemblyTitle>
+    <AssemblyVersion>$([System.IO.File]::ReadAllText("VERSION").Trim())</AssemblyVersion>
+    <Version>$(AssemblyVersion)</Version>
+    <InformationalVersion>$(AssemblyVersion)</InformationalVersion>
+    <ProductVersion>$(AssemblyVersion)</ProductVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+
+    <Authors>Christohper Conley</Authors>
+    <Company>Rosetta Stoned Software</Company>
+    <Description>
+      Colorful logging for PowerShell that doesn't suck.
+    </Description>
+    <Copyright>Copyright (c) 2024-2025 Christopher Conley</Copyright>
+    <Product>RosettaTools.Pwsh.Text.RevenantLogger</Product>
+    <ProductName>RosettaTools.Pwsh.Text.RevenantLogger</ProductName>
+    <Title>RosettaTools.Pwsh.Text.RevenantLogger</Title>
+    <PackageProjectUrl>https://github.com/christopher-conley/pwsh-RevenantLogger</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/christopher-conley/pwsh-RevenantLogger</RepositoryUrl>
+    <PackageTags>powershell;pwsh;powershell-module;pwsh-module;log;logs;logging;color;text;ansi;console;utility</PackageTags>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <ProjectGuid>77DCA780-DEAD-451B-BEEF-A7716181EBB3</ProjectGuid>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\figlet-fonts\*" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+    <PackageReference Include="System.Management.Automation" Version="7.4.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.49.2-preview.0.68" />
+    <PackageReference Include="Spectre.Console.Json" Version="0.49.2-preview.0.68" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0-rc.2.24473.5" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0-rc.2.24473.5" />
+    <PackageReference Include="vertical-spectreconsolelogger" Version="0.10.1-dev.20241201.35" />
+    <PackageReference Include="Brutal.Dev.StrongNameSigner" Version="3.5.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Using Include="RosettaTools.Pwsh.Text.RevenantLogger.Common" />
+    <Using Include="RosettaTools.Pwsh.Text.RevenantLogger.Helpers" />
+    <Using Include="RosettaTools.Pwsh.Text.RevenantLogger.Interfaces" />
+    <Using Include="System.Management.Automation" />
+    <Using Include="Vertical.SpectreLogger" />
+    <Using Include="Vertical.SpectreLogger.Options" />
+  </ItemGroup>
+
+  <Target Name="UpdateVersion" BeforeTargets="DispatchToInnerBuilds">
+    <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;..\scripts\setversion.ps1&quot; -AssemblyVersion" />
+  </Target>
+  
+</Project>
