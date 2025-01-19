@@ -9,7 +9,7 @@
     <!-- The following allows one cert to be referenced from the certificate store for self-signing in localbuilds and another cert to be passed in during official builds. -->
     
     <!-- This version is auto-set by the PowerShell script in the PreBuild event. -->
-    <MSIProductVersion>25.01.15.0254</MSIProductVersion>
+    <MSIProductVersion>25.01.19.1021</MSIProductVersion>
     <AppxCertificateThumbprint Condition=" '$(AppxCertificateThumbprint)' == '' ">
     </AppxCertificateThumbprint>
     <AppxTimestampUrl Condition=" '$(AppxTimestampUrl)' == '' ">
@@ -73,9 +73,5 @@
   <ItemGroup>
     <None Include="VERSION" />
   </ItemGroup>
-  
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;..\scripts\setversion.ps1&quot; -MSIProductVersion" />
-  </Target>
   
 </Project>
