@@ -9,8 +9,8 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <LangVersion>12.0</LangVersion>
 
-    <!-- This version is auto-set by the PowerShell script in the PreBuild event. -->
-    <AssemblyVersion>2025.01.19.1021</AssemblyVersion>
+    <!-- The content of the VERSION file read below is set by the PowerShell script in the "UpdateVersion" target. -->
+    <AssemblyVersion>$([System.IO.File]::ReadAllText("VERSION").Trim())</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
     <Authors>Christopher Conley</Authors>
@@ -68,12 +68,9 @@
     </None>
   </ItemGroup>
 
-  <Target Name="UpdateAssemblyVersion" BeforeTargets="DispatchToInnerBuilds">
-    <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;..\scripts\setversion.ps1&quot; -AssemblyVersion" />
-  </Target>
 
-  <Target Name="UpdateMSIVersion" BeforeTargets="DispatchToInnerBuilds" DependsOnTargets="$(UpdateAssemblyVersion)">
-    <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;..\scripts\setversion.ps1&quot; -MSIProductVersion" />
+  <Target Name="UpdateVersion" BeforeTargets="DispatchToInnerBuilds">
+    <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;..\scripts\setversion.ps1&quot; -AssemblyVersion" />
   </Target>
 
 </Project>

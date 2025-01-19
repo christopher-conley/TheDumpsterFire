@@ -40,7 +40,7 @@ function DoCleanup
 
     if ($FromEngineEvent)
     {
-        Write-Information -MessageData "Called by a PowerShell engine event" -InformationAction Continue
+        Write-Information -MessageData "Called by a PowerShell engine event" -InformationAction 'Continue'
 
         if ($TerminatingError)
         {
@@ -61,28 +61,30 @@ function DoCleanup
 
     if (($null -ne $SubscribedEngineEvents) -and ($SubscribedEngineEvents.Count -gt 0))
     {
-        Write-Information -MessageData "Unsubscribing from $($SubscribedEngineEvents.Count) engine event(s)." -InformationAction Continue
+        Write-Information -MessageData "Unsubscribing from $($SubscribedEngineEvents.Count) engine event(s)." -InformationAction 'Continue'
         foreach ($EventJob in $SubscribedEngineEvents)
         {
-            Write-Information -MessageData "Unsubscribing from engine event source: $($EventJob.SourceIdentifier)" -InformationAction Continue
+            Write-Information -MessageData "Unsubscribing from engine event source: $($EventJob.SourceIdentifier)" -InformationAction 'Continue'
             Unregister-Event -SourceIdentifier "$($EventJob.SourceIdentifier)"
         }
     }
 
     if ($HostIsTranscribing)
     {
-        Write-Information -MessageData "Stopping transcript on logfile: $($CleanupInfo.LogFile)" -InformationAction Continue
+        Write-Information -MessageData "Stopping transcript on logfile: $((Resolve-Path -Path $CleanupInfo.LogFile).Path)" -InformationAction 'Continue'
         Stop-Transcript
     }
 
     if ($null -ne $CleanupInfo.Mutex)
     {
-        Write-Information -MessageData "Disposing of file mutex" -InformationAction Continue
+        Write-Information -MessageData "Disposing of file mutex" -InformationAction 'Continue'
         $CleanupInfo.Mutex.WaitOne()
         $CleanupInfo.Mutex.Close()
         $CleanupInfo.Mutex.Dispose()
-        Write-Information -MessageData "Disposed of file mutex" -InformationAction Continue
+        Write-Information -MessageData "Disposed of file mutex" -InformationAction 'Continue'
     }
+
+    Write-Information -InformationAction 'Continue' -MessageData "Exiting from cleanup..."
 
     if ($CleanupInfo.HasErrors)
     {
@@ -94,11 +96,11 @@ function DoCleanup
     }
 }
 
-if ($PSCmdlet.ParameterSetName -eq 'Default')
-{
-    Write-Error -Message "The script was not called correctly, neither -AssemblyVersion nor -MSIProductVersion was specified."
-    [System.Environment]::Exit(1)
-}
+# if ($PSCmdlet.ParameterSetName -eq 'Default')
+# {
+#     Write-Error -Message "The script was not called correctly, neither -AssemblyVersion nor -MSIProductVersion was specified."
+#     [System.Environment]::Exit(1)
+# }
 
 [array] $SubscribedEvents = @()
 [string] $ParamSetName = $PSCmdlet.ParameterSetName.ToString()
@@ -158,114 +160,46 @@ if (!(Test-Path "$LogDir"))
 Start-Transcript -Path "$LogFile" -Append
 [bool] $HostIsTranscribing = $true
 
-Write-Host "Setting the AssemblyVersion and MSIProductVersion attributes in the KeysCmd.csproj and KeysCmdInstaller.wixproj project files."
-Write-Host "PsparameterSetName: $($PSCmdlet.ParameterSetName)"
+Write-Information -InformationAction 'Continue' -MessageData "PsparameterSetName: $($PSCmdlet.ParameterSetName)"
 [string] $ApplicationVersion = (Get-Date).ToString("yyyy.MM.dd.HHmm")
 [string] $MSIProductVersion = $ApplicationVersion.Substring(2)
-[string] $CurrenAssemblyVersion = [string]::Empty
-[string] $CurrentMSIProductVersion = [string]::Empty
 
-Write-Host "ApplicationVersion: $ApplicationVersion"
-Write-Host "MSIProductVersion: $MSIProductVersion"
+Write-Information -InformationAction 'Continue' -MessageData "ApplicationVersion: $ApplicationVersion"
+Write-Information -InformationAction 'Continue' -MessageData "MSIProductVersion: $MSIProductVersion"
 
-try
-{
-    Write-Information -MessageData "Acquiring file mutex for the script." -InformationAction Continue
+try {
+    Write-Information -InformationAction 'Continue' -MessageData "Acquiring file mutex"
     $FileMutex.WaitOne()
-    Write-Information -MessageData "Acquired mutex" -InformationAction Continue
+    Write-Information -InformationAction 'Continue' -MessageData "Acquired mutex"
 
-    if ($PSCmdlet.ParameterSetName -ne 'AssemblyVersion' -and $PSCmdlet.ParameterSetName -ne 'MSIProductVersion')
-    {
-        New-Event -SourceIdentifier "InternalTerminatingError" -MessageData "The script was not called correctly, neither -AssemblyVersion nor -MSIProductVersion was specified, and reaching this line of code should have been impossible."
-    }
+    Write-Information -InformationAction 'Continue' -MessageData "Making backup of VERSION file"
+    Copy-Item -Path "..\VERSION" -Destination "..\VERSION.bak" -Force -Confirm:$false
 
-    $CurrenAssemblyVersion = [System.Text.RegularExpressions.Regex]::Match((Get-Content ".\KeysCmd.csproj"), '<AssemblyVersion>(\d\d\d\d\.\d\d\.\d\d\.\d\d\d\d)<\/AssemblyVersion>').Groups[1].Value
-    $CurrentMSIProductVersion = [System.Text.RegularExpressions.Regex]::Match((Get-Content "..\KeysCmdInstaller\KeysCmdInstaller.wixproj"), '<MSIProductVersion>(\d\d\.\d\d\.\d\d\.\d\d\d\d)<\/MSIProductVersion>').Groups[1].Value
+    Write-Information -InformationAction 'Continue' -MessageData "Setting content of VERSION file in the main solution directory to: $ApplicationVersion."
+    Set-Content -Path "..\VERSION" -Value $ApplicationVersion -NoNewline -Force -Confirm:$false -Encoding utf8
 
-    Write-Host "Current AssemblyVersion: $CurrenAssemblyVersion"
-    Write-Host "Current MSIProductVersion: $CurrentMSIProductVersion"
+    Write-Information -InformationAction 'Continue' -MessageData "Removing backup of VERSION file"
+    Remove-Item -Path "..\VERSION.bak" -Force -Confirm:$false
 }
-catch
-{
-    $VersionParseError = $_
-    Write-Error -Message "Parsing the AssemblyVersion and MSIProductVersion attributes failed. The error was: $($VersionParseError.Exception)"
-    Write-Error -Message "Ensure that the `"AssemblyVersion`" and `"MSIProductVersion`" attributes are present in the KeysCmd.csproj and KeysCmdInstaller.wixproj project files."
-    Write-Error -Message "The AssemblyVersion attribute should be in the format: <AssemblyVersion>$ApplicationVersion</AssemblyVersion>."
-    Write-Error -Message "The MSIProductVersion attribute should be in the format: <MSIProductVersion>$MSIProductVersion</MSIProductVersion>."
-    New-Event -SourceIdentifier "InternalTerminatingError" -EventArguments $VersionParseError -MessageData "Parsing AssemblyVersion and MSIProductVersion attributes failed. The error was: $($VersionParseError.Exception)"
-}
-finally
-{
-    Write-Information -MessageData "Releasing file mutex" -InformationAction Continue
-    $FileMutex.ReleaseMutex()
-}
-
-[bool] $HasVersionParity = $CurrenAssemblyVersion.Substring(2) -eq $CurrentMSIProductVersion
-Write-Host "HasVersionParity: $HasVersionParity"
-
-try
-{
-    Write-Information -MessageData "Acquiring file mutex for the script." -InformationAction Continue
-    $FileMutex.WaitOne()
-    Write-Information -MessageData "Acquired mutex" -InformationAction Continue
-    $ApplicationVersion | Set-Content ".\VERSION" -Force -Confirm:$false -Encoding utf8
-    Write-Host "Setting AssemblyVersion to $ApplicationVersion in the KeysCmd.csproj project file."
-    Copy-Item -Path ".\KeysCmd.csproj" -Destination ".\KeysCmd.csproj.bak" -Force -Confirm:$false
-    Write-Host "Current proj file: "
-    Write-Host "$(Get-Content ".\KeysCmd.csproj")"
-    Write-Host "`n`n"
-            (Get-Content ".\KeysCmd.csproj") |
-    ForEach-Object { 
-        $_ -replace '^\W+<AssemblyVersion>\d\d\d\d\.\d\d\.\d\d\.\d\d\d\d<\/AssemblyVersion>$', "    <AssemblyVersion>$ApplicationVersion</AssemblyVersion>"
-    } | Set-Content -Path ".\KeysCmd.csproj" -Force -Confirm:$false -Encoding utf8
-        
-    Write-Host "New proj file: "
-    Write-Host "$(Get-Content ".\KeysCmd.csproj")"
-    Remove-Item -Path ".\KeysCmd.csproj.bak" -Force -Confirm:$false
-        
-}
-catch
-{
+catch {
     $VersionError = $_
-    Write-Error -Message "Setting the AssemblyVersion attribute failed. The error was: $($VersionError.Exception)"
-    Write-Warning -Message "Reverting the KeysCmd.csproj file to its original state."
-    Copy-Item -Path ".\KeysCmd.csproj.bak" -Destination ".\KeysCmd.csproj" -Force -Confirm:$false
-    New-Event -SourceIdentifier "InternalTerminatingError" -EventArguments $VersionParseError -MessageData "Setting the AssemblyVersion attribute failed. The error was: $($VersionError.Exception)"
-}
+    [string] $VersionBackupFile = (Resolve-Path -Path (Join-Path -Path "$PSScriptRoot" -ChildPath "..\VERSION.bak")).Path
+    [string] $LogfilePath = (Resolve-Path -Path (Join-Path -Path "$PSScriptRoot" -ChildPath "$LogFile")).Path
+    Write-Error -Message "Setting version information failed. The error was: $($VersionError.Exception)"
+    Write-Error -Message "$($VersionError.InvocationInfo.Line)"
+    Write-Error -Message "$($VersionError.InvocationInfo.PositionMessage)"
+    Write-Error -Message "$($VersionError.Exception.StackTrace)`n"
 
-if (!$HasVersionParity)
-{
-    try
-    {
-        $MSIProductVersion | Set-Content "..\KeysCmdInstaller\VERSION" -Force -Confirm:$false -Encoding utf8
-        Copy-Item -Path "..\KeysCmdInstaller\KeysCmdInstaller.wixproj" -Destination "..\KeysCmdInstaller\KeysCmdInstaller.wixproj.bak" -Force -Confirm:$false
-            (Get-Content "..\KeysCmdInstaller\KeysCmdInstaller.wixproj") |
-        ForEach-Object { 
-            $_ -replace '^\W+<MSIProductVersion>\d\d\.\d\d\.\d\d\.\d\d\d\d<\/MSIProductVersion>$', "    <MSIProductVersion>$MSIProductVersion</MSIProductVersion>"
-        } | Set-Content -Path "..\KeysCmdInstaller\KeysCmdInstaller.wixproj" -Force -Confirm:$false -Encoding utf8
-        
-        Remove-Item -Path "..\KeysCmdInstaller\KeysCmdInstaller.wixproj.bak" -Force -Confirm:$false
-    }
-    catch
-    {
-        $VersionError = $_
-        Write-Error -Message "Setting the MSIProductVersion attribute failed. The error was: $($VersionError.Exception)"
-        Write-Warning -Message "Reverting the KeysCmd.csproj file to its original state."
-        Copy-Item -Path "..\KeysCmdInstaller\KeysCmdInstaller.wixproj.bak" -Destination "..\KeysCmdInstaller\KeysCmdInstaller.wixproj" -Force -Confirm:$false
-        New-Event -SourceIdentifier "InternalTerminatingError" -EventArguments $VersionParseError -MessageData "Setting the MSIProductVersion attribute failed. The error was: $($VersionError.Exception)"
-    }
+    Write-Warning -Message "Reverting VERSION file to its original state."
+    Copy-Item -Path "..\VERSION.bak" -Destination "..\VERSION" -Force -Confirm:$false
+    Write-Warning -Message "Backup of VERSION file has intentionally been left remaining on the filesystem at: $VersionBackupFile"
+    Write-Warning -Message "Please inspect Build Output and the log file at `"$LogfilePath`" to determine the new and exciting method Visual Studio has discovered to fuck things up."
+    New-Event -SourceIdentifier "InternalTerminatingError" -EventArguments $VersionParseError -MessageData "Setting version information failed. The error was: $($VersionError.Exception)"
 }
-
 finally {
-    Write-Information -MessageData "Releasing file mutex" -InformationAction Continue
+    Write-Information -InformationAction 'Continue' -MessageData "Releasing file mutex"
     $FileMutex.ReleaseMutex()
+    Write-Information -InformationAction 'Continue' -MessageData "Exiting..."
     DoCleanup -CleanupInfo $ExitInfo -SubscribedEngineEvents $SubscribedEvents
 }
-
-
-# Shouldn't ever get here, but just in case
-
-Stop-Transcript
-$HostIsTranscribing = $false
-DoCleanup -CleanupInfo $ExitInfo -SubscribedEngineEvents $SubscribedEvents
 
