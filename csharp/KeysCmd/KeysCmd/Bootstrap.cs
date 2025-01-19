@@ -170,6 +170,7 @@ namespace RosettaTools.CLI.KeysCmd
 
             Logger?.BeginScope(FormatCaller());
             Logger?.CLogInformation("-- KeysCmd start --", FormatCaller());
+            Logger?.CLogInformation("Using config file at: [green]{Config.DefaultConfigFile}[/]", FormatCaller(), Config.DefaultConfigFile);
             Logger?.CLogInformation("KeysCmd running as user: [bold darkgoldenrod]{WhoAmI}[/]", FormatCaller(), WhoAmI);
 
             AppTypeRegistrar = new TypeRegistrar(GenericHost);

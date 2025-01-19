@@ -110,9 +110,9 @@ namespace RosettaTools.CLI.KeysCmd.Common
         /// </summary>
         private string _os;
 
-        private readonly string _commonAppDataDir;
+        private string _commonAppDataDir;
 
-        private readonly string _appDataDir;
+        private string _appDataDir;
 
         /// <summary>
         /// A <see cref="string"/> containing the path to the "CommonApplicationData" OS directory.<br></br>
@@ -120,29 +120,33 @@ namespace RosettaTools.CLI.KeysCmd.Common
         /// going to prefer "/etc" on Linux instead of the default if the <c>GetFolderPath</c> call resolves.
         /// </summary>
         public string CommonAppDataDir {
-            get => _commonAppDataDir;
-            init {
-                if (_isLinux)
+            get {
+                if (null == _commonAppDataDir)
                 {
-                    _commonAppDataDir = "/etc";
-                    return;
-                }
-
-                if (null == Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData))
-                {
-                    if (_isWindows)
+                    if (_isLinux)
                     {
-                        _commonAppDataDir = @"C:\ProgramData";
+                        _commonAppDataDir = "/etc";
+                        return _commonAppDataDir;
+                    }
+
+                    if (null == Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData))
+                    {
+                        if (_isWindows)
+                        {
+                            _commonAppDataDir = @"C:\ProgramData";
+                        }
+                        else
+                        {
+                            throw new PlatformNotSupportedException($"The current platform: \"{RuntimeInformation.OSDescription}\" is not supported.");
+                        }
                     }
                     else
                     {
-                        throw new PlatformNotSupportedException($"The current platform: \"{RuntimeInformation.OSDescription}\" is not supported.");
+                        _commonAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
                     }
                 }
-                else
-                {
-                    _commonAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-                }
+
+                return _commonAppDataDir;
             }
         }
 
@@ -156,44 +160,48 @@ namespace RosettaTools.CLI.KeysCmd.Common
 #pragma warning disable CA1416
         public string AppDataDir
         {
-            get => _appDataDir;
-            init {
-                if (_isLinux)
+            get {
+                if (null == _appDataDir)
                 {
-                    _appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config");
-                    if (Directory.Exists(_appDataDir) == false)
+                    if (_isLinux)
                     {
+                        _appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config");
+                        if (Directory.Exists(_appDataDir) == false)
+                        {
 #if NET7_0_OR_GREATER
-                    Directory.CreateDirectory(_appDataDir,
-                        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                        UnixFileMode.GroupRead | UnixFileMode.GroupExecute
-                        );
+                            Directory.CreateDirectory(_appDataDir,
+                                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                                UnixFileMode.GroupRead | UnixFileMode.GroupExecute
+                                );
 #else
                         Directory.CreateDirectory(_appDataDir);
 #endif
+                        }
+                        return _appDataDir;
                     }
-                    return;
-                }
 
-                if (null == Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData))
-                {
-                    if (_isWindows)
+                    if (null == Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData))
                     {
-                        _appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming");
-                        if (Directory.Exists(_appDataDir) == false)
+                        if (_isWindows)
                         {
-                            Directory.CreateDirectory(_appDataDir);
+                            _appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming");
+                            if (Directory.Exists(_appDataDir) == false)
+                            {
+                                Directory.CreateDirectory(_appDataDir);
+                            }
+                        }
+                        else
+                        {
+                            throw new PlatformNotSupportedException($"The current platform: \"{RuntimeInformation.OSDescription}\" is not supported.");
                         }
                     }
                     else
                     {
-                        throw new PlatformNotSupportedException($"The current platform: \"{RuntimeInformation.OSDescription}\" is not supported.");
+                        _appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                     }
                 }
-                else
-                {
-                    _appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                }
+
+                return _appDataDir;
             }
         }
 #pragma warning restore CA1416
@@ -391,7 +399,7 @@ namespace RosettaTools.CLI.KeysCmd.Common
                 _configHome = Path.Combine(CommonAppDataDir, "keyscmd");
             }
 
-            else if (File.Exists(Path.Combine((Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ?? AppDataDir), "keyscmd")))
+            else if (File.Exists(Path.Combine((Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ?? AppDataDir), "keyscmd", _defaultConfigFilename)))
             {
                 _configHome = Path.Combine((Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ?? AppDataDir), "keyscmd");
             }
@@ -491,10 +499,7 @@ namespace RosettaTools.CLI.KeysCmd.Common
             }
             catch (Exception ex)
             {
-                if (null != logger)
-                {
-                    logger.LogCritical("Failed to load configuration file from disk: {ex.Message}", ex.Message);
-                }
+                logger?.LogCritical("Failed to load configuration file from disk: {ex.Message}", ex.Message);
                 throw;
             }
         }
@@ -527,10 +532,7 @@ namespace RosettaTools.CLI.KeysCmd.Common
             }
             catch (Exception ex)
             {
-                if (null != logger)
-                {
-                    logger.LogCritical("Failed to write configuration file to disk: {ex.Message}", ex.Message);
-                }
+                logger?.LogCritical("Failed to write configuration file to disk: {ex.Message}", ex.Message);
                 throw;
             }
         }

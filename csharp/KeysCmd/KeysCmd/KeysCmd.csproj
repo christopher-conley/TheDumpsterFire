@@ -10,7 +10,7 @@
     <LangVersion>12.0</LangVersion>
 
     <!-- This version is auto-set by the PowerShell script in the PreBuild event. -->
-    <AssemblyVersion>2025.01.15.0254</AssemblyVersion>
+    <AssemblyVersion>2025.01.19.0914</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
     <Authors>Christopher Conley</Authors>
