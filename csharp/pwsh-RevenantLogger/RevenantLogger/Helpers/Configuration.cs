@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using RosettaTools.Pwsh.Text.RevenantLogger.Interfaces;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,24 +8,67 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
-    public class Configuration {
+namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
+{
+    public class Configuration : IRevenantConfiguration
+    {
 
-        protected internal static DateTime _creationTime;
-        protected internal string _configHome = string.Empty;
-        protected internal string _defaultConfigFilename = "revenantlogger.config.json";
-        protected internal string _defaultConfigFile;
-        protected internal string _logPath = string.Empty;
-        protected internal ConfigDefinition.ConfigRoot _defaultConfig;
-        protected internal ConfigDefinition.ConfigRoot _runningConfig;
-        protected internal bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        protected internal bool _isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-        protected internal string _os;
+        private readonly ILogger<Configuration>? _logger;
+        private static DateTime _creationTime;
+        private string _appDataDir;
+        private string _configHome = string.Empty;
+        private string _defaultConfigFilename = "revenantlogger.config.json";
+        private string _defaultConfigFile;
+        private string _logPath = string.Empty;
+        private ConfigDefinition.ConfigRoot _defaultConfig;
+        private ConfigDefinition.ConfigRoot _runningConfig;
+        private bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        private bool _isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+        private string _os;
 
-        public DateTime CreationTime
+        public DateTime CreationTime { get => _creationTime; }
+
+#pragma warning disable CA1416
+        public string AppDataDir
         {
             get {
-                return _creationTime;
+                if (null == _appDataDir)
+                {
+                    if (_isLinux)
+                    {
+                        _appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config");
+                        if (Directory.Exists(_appDataDir) == false)
+                        {
+                            Directory.CreateDirectory(_appDataDir,
+                                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                                UnixFileMode.GroupRead | UnixFileMode.GroupExecute
+                                );
+                        }
+                        return _appDataDir;
+                    }
+
+                    if (null == Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData))
+                    {
+                        if (_isWindows)
+                        {
+                            _appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming");
+                            if (Directory.Exists(_appDataDir) == false)
+                            {
+                                Directory.CreateDirectory(_appDataDir);
+                            }
+                        }
+                        else
+                        {
+                            throw new PlatformNotSupportedException($"The current platform: \"{RuntimeInformation.OSDescription}\" is not supported.");
+                        }
+                    }
+                    else
+                    {
+                        _appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    }
+                }
+
+                return _appDataDir;
             }
         }
         public ConfigDefinition.ConfigRoot DefaultConfig
@@ -32,9 +77,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                 _defaultConfig ??= GetDefaultConfig();
                 return _defaultConfig;
             }
-            private set {
-                _defaultConfig = value;
-            }
+            private set { _defaultConfig = value; }
         }
 
         public ConfigDefinition.ConfigRoot RunningConfig
@@ -43,137 +86,194 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                 _runningConfig ??= GetDefaultConfig();
                 return _runningConfig;
             }
-            set {
-                _defaultConfig = value;
-            }
+            set { _defaultConfig = value; }
         }
 
-        protected internal string ConfigHome
+        public ConfigDefinition.LoggingRoot LoggingConfig
         {
-            get {
-                return _configHome;
-            }
-            private set {
-                _configHome = value;
-            }
+            get => _runningConfig.Logging;
         }
 
-        protected internal string DefaultConfigFilename
+        public string ConfigHome
         {
-            get {
-                return _defaultConfigFilename;
-            }
-            private set {
-                _defaultConfigFilename = value;
-            }
+            get => _configHome;
+            private set => _configHome = value;
         }
 
-        protected internal string DefaultConfigFile
+        public string DefaultConfigFilename
         {
-            get {
-                return _defaultConfigFile;
-            }
-            private set {
-                _defaultConfigFile = value;
-            }
+            get => _defaultConfigFilename;
+            private set => _defaultConfigFilename = value;
+        }
+
+        public string DefaultConfigFile
+        {
+            get => _defaultConfigFile;
+            private set => _defaultConfigFile = value;
         }
 
         public bool LoggingEnabled
         {
-            get {
-                return _runningConfig.Logging.Enabled;
-            }
-            set {
-                _runningConfig.Logging.Enabled = value;
-            }
+            get => _runningConfig.Logging.Enabled;
+            set => _runningConfig.Logging.Enabled = value;
         }
-        protected internal string LogPath
+        public string LogPath
         {
-            get {
-                return _logPath;
-            }
-            private set {
-                _logPath = value;
-            }
+            get => _logPath;
+            set => _logPath = value;
         }
 
-        protected internal bool IsWindows
+        public bool IsWindows
         {
-            get {
-                return _isWindows;
-            }
-            private set {
-                _isWindows = value;
-            }
+            get => _isWindows;
+            private set => _isWindows = value;
         }
 
-        protected internal bool IsLinux
+        public bool IsLinux
         {
-            get {
-                return _isLinux;
-            }
-            private set {
-                _isLinux = value;
-            }
+            get => _isLinux;
+            private set => _isLinux = value;
         }
 
-        protected internal string OS
+        public string OS
         {
-            get {
-                return _os;
-            }
-            private set {
-                _os = value;
-            }
+            get => _os;
+            private set => _os = value;
         }
 
-        public Configuration() {
+        protected internal ILogger<Configuration>? Logger
+        {
+            get => _logger;
+        }
+
+        public Configuration(ILogger<Configuration> logger)
+        {
+            _logger = logger;
+            Init();
+        }
+        public Configuration()
+        {
+            Init();
+        }
+
+        private void Init()
+        {
             _defaultConfig = GetDefaultConfig();
             _runningConfig ??= GetDefaultConfig();
 
             _os = _isWindows ? "Windows" : _isLinux ? "Linux" : "Unknown";
-            _configHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            _configHome = Path.Combine(
-                new string[] {
+
+            // per-directory logging settings support if dotfile of config filename exists
+            if (File.Exists($".{_defaultConfigFilename}"))
+            {
+                _configHome = Directory.GetCurrentDirectory();
+            }
+            else
+            {
+                _configHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ?? AppDataDir;
+                _configHome = Path.Combine(
+                [
                     _configHome,
-                    "rosettatools",
-                    "pwsh",
-                    "text",
-                    "revenantlogger"
-                });
+                        "rosettatools",
+                        "pwsh",
+                        "text",
+                        "revenantlogger"
+                ]);
+            }
             _defaultConfigFile = Path.Combine(_configHome, _defaultConfigFilename);
 #pragma warning disable CA1416 // Validate platform compatibility
-            if (!Directory.Exists(_configHome)) {
-                if (_isLinux) {
+
+            // Yeah, this looks dumb, but it's a whole hell of a lot easier to read
+            // in this context than just slapping a negation operator at the front
+            if (Directory.Exists(_configHome) == false)
+            {
+                if (_isLinux)
+                {
                     Directory.CreateDirectory(_configHome,
                         UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
                         UnixFileMode.GroupRead | UnixFileMode.GroupExecute
                         );
                 }
-                else {
+                else
+                {
                     Directory.CreateDirectory(_configHome);
                 }
             }
 #pragma warning restore CA1416 // Validate platform compatibility
             LoadConfig();
+            if (String.IsNullOrWhiteSpace(_runningConfig.Logging.TimestampFormat))
+            {
+                _runningConfig.Logging.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fff";
+            }
+            else
+            {
+                bool isValidFormat = false;
+                isValidFormat = DateTime.TryParse(_runningConfig.Logging.TimestampFormat, out DateTime validatedDateTime);
+                _runningConfig.Logging.TimestampFormat = isValidFormat ? _runningConfig.Logging.TimestampFormat : "yyyy-MM-ddTHH:mm:ss.fff";
+            }
+
             _logPath = Path.Combine(_configHome, _runningConfig.Logging.LogDirectory);
-            _creationTime = DateTime.Now;
+
+            if (_runningConfig.Logging.UTC)
+            {
+                _creationTime = DateTime.UtcNow;
+            }
+            else
+            {
+                _creationTime = DateTime.Now;
+            }
         }
 
-        protected internal void LoadConfig() {
-            if (!File.Exists(_defaultConfigFile)) {
+        protected internal void LoadConfig()
+        {
+            if (File.Exists(_defaultConfigFile) == false)
+            {
                 SaveConfig();
             }
-            string json = File.ReadAllText(_defaultConfigFile);
-            _runningConfig = JsonConvert.DeserializeObject<ConfigDefinition.ConfigRoot>(json);
+
+            try
+            {
+                string json = File.ReadAllText(_defaultConfigFile);
+                _runningConfig = JsonConvert.DeserializeObject<ConfigDefinition.ConfigRoot>(json) ?? GetDefaultConfig();
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogCritical("Failed to load configuration file from disk: {ex.Message}", ex.Message);
+                throw;
+            }
         }
 
-        protected internal void SaveConfig() {
-            string json = JsonConvert.SerializeObject(_runningConfig, Formatting.Indented);
-            File.WriteAllText(_defaultConfigFile, json);
+        public void SaveConfig()
+        {
+            SaveConfig(_runningConfig, _defaultConfigFile);
         }
 
-        protected internal ConfigDefinition.ConfigRoot GetDefaultConfig() {
+        public void SaveConfig(ConfigDefinition.ConfigRoot _incomingConfig)
+        {
+            SaveConfig(_incomingConfig, _defaultConfigFile);
+        }
+
+        public void SaveConfig(string _savePath)
+        {
+            SaveConfig(_runningConfig, _savePath);
+        }
+
+        public void SaveConfig(ConfigDefinition.ConfigRoot _incomingConfig, string _savePath)
+        {
+            string json = JsonConvert.SerializeObject(_incomingConfig, Formatting.Indented);
+            try
+            {
+                File.WriteAllText(_savePath, json);
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogCritical("Failed to write configuration file to disk: {ex.Message}", ex.Message);
+                throw;
+            }
+        }
+
+        public ConfigDefinition.ConfigRoot GetDefaultConfig()
+        {
 
             return new ConfigDefinition.ConfigRoot {
                 ShowLogo = false,

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using RosettaTools.Pwsh.Text.RevenantLogger.Common;
+using RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
 
     public class LoggerObject : RevenantLoggerPSCmdlet, ILogger {
+        private IRevenantConfiguration _config;
         private ILogger<Type> _loggerWithType;
         private ILogger _logger;
         private ILogger _pseudoLogger;
@@ -33,8 +35,16 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             _pseudoLogger = logger;
         }
 
+        public LoggerObject(ILogger<LoggerObject> logger, IRevenantConfiguration config)
+        {
+            _logger = _pseudoLogger = logger;
+            _loggerWithType = (ILogger<Type>?)logger;
+            _config = config;
 
-        public void Log(string message, string logLevel)
+        }
+
+
+        public void Log(string message, string logLevel, [CallerMemberName] string? caller = null)
         {
             ShortLogLevel userShortLogLevel;
 
@@ -52,38 +62,47 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                 }
                 else
                 {
-                    Log(message, userLogLevel);
+                    Log(message, userLogLevel, caller: caller );
                 }
             }
 
             else
             {
-                Log(message, (LogLevel)userShortLogLevel);
+                Log(message, shortlogLevel: userShortLogLevel, useShortLogLevel: true, caller: caller);
             }
         }
 
-        public void Log(string message, LogLevel logLevel = LogLevel.Information) {
-            switch (logLevel) {
+        public void Log(
+            string message,
+            LogLevel logLevel = LogLevel.Information,
+            ShortLogLevel shortlogLevel = ShortLogLevel.info,
+            bool useShortLogLevel = false,
+            [CallerMemberName] string? caller = null
+            ) {
+
+            LogLevel switchLogLevel = (useShortLogLevel) ? (LogLevel)shortlogLevel : logLevel;
+
+            switch (switchLogLevel) {
                 case LogLevel.Information:
-                    _pseudoLogger.LogInformation(message);
+                    _pseudoLogger.RLogInformation(message: message, caller: caller);
                     break;
                 case LogLevel.Warning:
-                    _pseudoLogger.LogWarning(message);
+                    _pseudoLogger.RLogWarning(message: message, caller: caller);
                     break;
                 case LogLevel.Error:
-                    _pseudoLogger.LogError(message);
+                    _pseudoLogger.RLogError(message: message, caller: caller);
                     break;
                 case LogLevel.Critical:
-                    _pseudoLogger.LogCritical(message);
+                    _pseudoLogger.RLogCritical(message: message, caller: caller);
                     break;
                 case LogLevel.Debug:
-                    _pseudoLogger.LogDebug(message);
+                    _pseudoLogger.RLogDebug(message: message, caller: caller);
                     break;
                 case LogLevel.Trace:
-                    _pseudoLogger.LogTrace(message);
+                    _pseudoLogger.RLogTrace(message: message, caller: caller);
                     break;
                 default:
-                    _pseudoLogger.LogInformation(message);
+                    _pseudoLogger.RLogInformation(message: message, caller: caller);
                     break;
             }
         }
@@ -111,32 +130,27 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
         }
     }
 
-    public class BareLogger : IBareLogger {
-        private readonly ILogger<IBareLogger> logger;
-
-        public BareLogger(ILogger<IBareLogger> _logger) {
-            logger = _logger;
-        }
-
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull {
-            return logger.BeginScope(state);
-        }
-
-        public bool IsEnabled(LogLevel logLevel) {
-            return logger.IsEnabled(logLevel);
-        }
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
-            logger.Log(logLevel, eventId, state, exception, formatter);
-        }
-    }
-
-
     public class FileLogProvider : RevenantLoggerPSCmdlet, ILoggerProvider {
 
+        private readonly IRevenantConfiguration _config;
+        private readonly ILogger<FileLogProvider>? _logger;
+
+        public IRevenantConfiguration LoggingConfig { get => _config; }
+        public ILogger<FileLogProvider>? Logger { get => _logger; }
+
+        public FileLogProvider(IRevenantConfiguration config)
+        {
+            _config = config;
+        }
+
+        public FileLogProvider(ILogger<FileLogProvider> logger, IRevenantConfiguration config)
+        {
+            _logger = logger;
+            _config = config;
+        }
         public ILogger CreateLogger(string categoryName) {
 
-            return new SpectreFileLogger(LoggerConfig, categoryName);
+            return new RevenantFileLogger(LoggingConfig, categoryName);
         }
 
         public void Dispose() {
@@ -144,7 +158,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
         }
     }
 
-    public class SpectreFileLogger : RevenantLoggerPSCmdlet, ILogger {
+    public class RevenantFileLogger : RevenantLoggerPSCmdlet, ILogger {
 
         private readonly string _logPath;
         private readonly string _logFilename;
@@ -152,7 +166,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
         private readonly SemaphoreSlim _logFileLock = new(1, 1);
         private readonly LogLevel _minimumLogLevel;
         private string _categoryName;
-        private Configuration _runtimeConfig;
+        private IRevenantConfiguration _runtimeConfig;
         private ConfigDefinition.LoggingRoot _logConfigRoot;
 
         internal string LogPath { get => _logPath; }
@@ -169,7 +183,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             private set => _categoryName = value;
         }
 
-        internal Configuration RuntimeConfig
+        internal IRevenantConfiguration RuntimeConfig
         {
             get => _runtimeConfig;
             private set => _runtimeConfig = value;
@@ -181,7 +195,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             set => _logConfigRoot = value;
         }
 
-        public SpectreFileLogger(Configuration runtimeConfig, string categoryName) {
+        public RevenantFileLogger(IRevenantConfiguration runtimeConfig, string categoryName) {
             _runtimeConfig = runtimeConfig;
             _logConfigRoot = runtimeConfig.RunningConfig.Logging;
 
@@ -221,9 +235,10 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             }
 
             ShortLogLevel shortLogLevel = (ShortLogLevel)logLevel;
+            var message = formatter(state, exception);
+
             DateTime userTimestamp = (LogConfigRoot.UTC) ? DateTime.UtcNow : DateTime.Now;
 
-            var message = formatter(state, exception);
             //string fileLogState = state?.ToString() ?? String.Empty;
             //fileLogState = Markup.Remove(fileLogState);
 
@@ -280,4 +295,35 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+    //public class BareLogger : IBareLogger {
+    //    private readonly ILogger<IBareLogger> logger;
+
+    //    public BareLogger(ILogger<IBareLogger> _logger) {
+    //        logger = _logger;
+    //    }
+
+    //    public IDisposable? BeginScope<TState>(TState state) where TState : notnull {
+    //        return logger.BeginScope(state);
+    //    }
+
+    //    public bool IsEnabled(LogLevel logLevel) {
+    //        return logger.IsEnabled(logLevel);
+    //    }
+
+    //    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
+    //        logger.Log(logLevel, eventId, state, exception, formatter);
+    //    }
+    //}
 }

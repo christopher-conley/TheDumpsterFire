@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Spectre.Console.Cli;
 using System;
@@ -14,8 +15,8 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
         private static ILoggerFactory? _sharedLoggerFactory;
         private static ILogger? _logger;
         private static Configuration _loggerConfig;
-        //private static IHostBuilder? _genericHostBuilder;
-        //private static IHost? _genericHost;
+        private static IHostBuilder? _genericHostBuilder;
+        private static IHost? _genericHost;
         //internal IHostBuilder GenericHostBuilder
         //{
         //    get {
@@ -188,5 +189,48 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
             SessionState.PSVariable.Set(existingBootstrapVariable);
         }
 
+
+        //internal static IHostBuilder BuildAppHost(ILoggerFactory? sharedFactory)
+        //{
+        //    if (null == sharedFactory)
+        //    {
+        //        sharedFactory = LoggerCreation.NewLoggerFactory(noIlogProvider: true);
+        //    }
+
+        //    string basePath = Directory.GetCurrentDirectory();
+        //    IHostBuilder hostBuilder = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+        //        .ConfigureAppConfiguration(c => {
+        //            c.SetBasePath(basePath);
+        //        })
+        //        .ConfigureHostOptions(options => {
+        //            options.ShutdownTimeout = TimeSpan.FromSeconds(15);
+        //        })
+        //        .ConfigureLogging(builder => {
+        //            builder.AddSimpleConsole(options => {
+        //                options.IncludeScopes = true;
+        //                options.SingleLine = true;
+        //                options.TimestampFormat = Config.RunningConfig.Logging.TimestampFormat;
+        //            });
+        //            builder.ClearProviders();
+        //            builder.AddProvider(new FileLogILogProvider());
+        //        })
+        //        .ConfigureServices((context, services) => {
+        //            services.AddSingleton<ILoggerFactory>(sharedFactory);
+        //            services.AddSingleton<IFileLogILogProvider, FileLogILogProvider>();
+        //            services.AddSingleton<IFileLogger, FileLogger>();
+        //            services.AddSingleton<ICommandInterceptor, BaseInterceptor>();
+        //            services.AddSingleton<IKeysCmdConfiguration, Configuration>();
+        //            services.AddSingleton<ILDAPHelper, LDAPHelper>();
+        //        });
+
+        //    if (Config.LoggingEnabled && (null != Logger))
+        //    {
+        //        hostBuilder.ConfigureServices((context, services) => {
+        //            services.AddSingleton<ILogger>(Logger);
+        //        });
+        //    }
+
+        //    return hostBuilder;
+        //}
     }
 }

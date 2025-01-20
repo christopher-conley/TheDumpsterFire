@@ -35,8 +35,8 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             BaseBootstrap = GetExistingPSVariable<Bootstrap>(SessionState: this.SessionState, psVariable: "__RevenantLoggerExistingBootstrap");
             BaseBootstrap ??= new Bootstrap(SessionState: this.SessionState);
 
-            //LoggerConfig = GetExistingPSVariable<Configuration>(SessionState: this.SessionState, psVariable: "__RevenantLoggerExistingConfig");
-            //LoggerConfig ??= new Configuration();
+            //LoggingConfig = GetExistingPSVariable<Configuration>(SessionState: this.SessionState, psVariable: "__RevenantLoggerExistingConfig");
+            //LoggingConfig ??= new Configuration();
 
 
             //BaseBootstrap = GetBootstrapper(this.SessionState);

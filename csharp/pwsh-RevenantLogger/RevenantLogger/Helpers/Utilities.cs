@@ -18,17 +18,30 @@ using System.Diagnostics;
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
     internal class Utilities : RevenantLoggerPSCmdlet {
         private readonly ILogger<Utilities> _logger;
+        private static IRevenantConfiguration _config;
 
         public ILogger<Utilities> Logger
         {
             get => _logger;
         }
 
-        public Utilities(ILogger<Utilities> logger) {
+        public static IRevenantConfiguration Config {
+            get {
+                _config ??= new Configuration();
+                return _config;
+            }
+        }
+
+        public Utilities(ILogger<Utilities> logger, IRevenantConfiguration config) {
+            _config = config;
             _logger = logger;
         }
 
-        public static ILoggerFactory? NewLoggerFactory(Configuration LoggerConfig) {
+        public static ILoggerFactory? NewLoggerFactory()
+        {
+            return NewLoggerFactory(Config);
+        }
+        public static ILoggerFactory? NewLoggerFactory(IRevenantConfiguration LoggerConfig) {
             //string modulePath = Path.GetDirectoryName(typeof(Utilities).Assembly.Location);
             //string ObjectPool = Path.Combine(modulePath, "Microsoft.Extensions.ObjectPool.dll");
             //string SysTextJson = Path.Combine(modulePath, "System.Text.Json.dll");
@@ -57,11 +70,20 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                     });
                 });
                 if (LoggerConfig.LoggingEnabled) {
-                    builder.AddProvider(new FileLogProvider());
+                    builder.AddProvider(new FileLogProvider(config: Utilities.Config));
                 }
             });
         }
-        public static ILogger? NewLogger(Type type, Configuration LoggerConfig) {
+
+        public static ILogger? NewLogger(Type type)
+        {
+
+            var loggerFactory = NewLoggerFactory(Config);
+
+            var builtLogger = loggerFactory.CreateLogger(type);
+            return builtLogger;
+        }
+        public static ILogger? NewLogger(Type type, IRevenantConfiguration LoggerConfig) {
 
             var loggerFactory = NewLoggerFactory(LoggerConfig);
 
@@ -69,8 +91,20 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             return builtLogger;
         }
 
+        public static ILogger? NewLogger(string categoryName, ILoggerFactory? factory)
+        {
+            var builtLogger = factory?.CreateLogger(categoryName);
+            return builtLogger;
+        }
+
         public static ILogger? NewLogger(Type type, ILoggerFactory? factory) {
             var builtLogger = factory?.CreateLogger(type);
+            return builtLogger;
+        }
+
+        public static ILogger? NewLogger<TLogger>(ILoggerFactory? factory) where TLogger : class
+        {
+            var builtLogger = factory?.CreateLogger(typeof(TLogger));
             return builtLogger;
         }
 
@@ -117,18 +151,18 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                 FigletText logoText;
                 try {
                     font = FigletFont.Load(stream);
-                    logoText = new FigletText(font, "RosettaTools Pwsh RevenantLogger")
+                    logoText = new FigletText(font, "RosettaTools Revenant Logger")
                         .Centered()
                         .Color(Color.Red);
                     if ((null == logoText) || (font == FigletFont.Default)) {
-                        AnsiConsole.MarkupLine("[bright yellow]RosettaTools Pwsh RevenantLogger[/]");
+                        AnsiConsole.MarkupLine("[bright yellow]RosettaTools Revenant Logger[/]");
                         return;
                     }
                     AnsiConsole.Write(logoText);
                     AnsiConsole.Write(new Rule($"[yellow]Figlet font: {shortFontName}[/]\n\n").Justify(Justify.Right).RuleStyle("red"));
                 }
                 catch {
-                    AnsiConsole.MarkupLine("[bright yellow]CRosettaTools Pwsh RevenantLogger[/]");
+                    AnsiConsole.MarkupLine("[bright yellow]CRosettaTools Revenant Logger[/]");
                     return;
                 }
             }
