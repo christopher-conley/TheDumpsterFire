@@ -9,25 +9,23 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
-
+namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
+{
     public class LoggerObject : RevenantLoggerPSCmdlet, ILogger {
         private IRevenantConfiguration _config;
-        private ILogger<Type> _loggerWithType;
         private ILogger _logger;
         private ILogger _pseudoLogger;
-        private bool _hasType = false;
+        private bool _hasType = true;
 
-        public ILogger<Type> Logger
+        public ILogger Logger
         {
-            get => _loggerWithType;
-            set => _loggerWithType = value;
+            get => _pseudoLogger;
+            set => _pseudoLogger = value;
         }
 
-        public LoggerObject(ILogger<Type> logger) {
-            _loggerWithType = logger;
-            _hasType = true;
-            _pseudoLogger = logger;
+        public IRevenantConfiguration LConfig
+        {
+            get => RevenantConfig;
         }
 
         public LoggerObject(ILogger logger) {
@@ -38,7 +36,6 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
         public LoggerObject(ILogger<LoggerObject> logger, IRevenantConfiguration config)
         {
             _logger = _pseudoLogger = logger;
-            _loggerWithType = (ILogger<Type>?)logger;
             _config = config;
 
         }
@@ -108,21 +105,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
         }
 
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull {
-            if (_hasType) {
-                return _loggerWithType.BeginScope(state);
-            }
-            else {
-                return _logger.BeginScope(state);
-            }
+            return _logger.BeginScope(state);
         }
 
         public bool IsEnabled(LogLevel logLevel) {
-            if (_hasType) {
-                return _loggerWithType.IsEnabled(logLevel);
-            }
-            else {
-                return _logger.IsEnabled(logLevel);
-            }
+            return _logger.IsEnabled(logLevel);
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
@@ -130,14 +117,20 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
         }
     }
 
-    public class FileLogProvider : RevenantLoggerPSCmdlet, ILoggerProvider {
+    public class FileLogProvider : RevenantLoggerPSCmdlet, ILoggerProvider, IFileLogProvider
+    {
 
-        private readonly IRevenantConfiguration _config;
+        private readonly IRevenantConfiguration? _config;
         private readonly ILogger<FileLogProvider>? _logger;
+        private RevenantFileLogger? _builtLogger;
 
-        public IRevenantConfiguration LoggingConfig { get => _config; }
+        public IRevenantConfiguration? LoggingConfig { get => _config; }
         public ILogger<FileLogProvider>? Logger { get => _logger; }
 
+        public FileLogProvider()
+        {
+            
+        }
         public FileLogProvider(IRevenantConfiguration config)
         {
             _config = config;
@@ -148,24 +141,46 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             _logger = logger;
             _config = config;
         }
-        public ILogger CreateLogger(string categoryName) {
+        public ILogger CreateLogger(string? categoryName = null)
+        {
 
-            return new RevenantFileLogger(LoggingConfig, categoryName);
+            _builtLogger = new RevenantFileLogger(LoggingConfig, categoryName);
+            return _builtLogger;
         }
 
-        public void Dispose() {
-            return;
+        public async void Dispose()
+        {
+            GC.SuppressFinalize(this);
+
+            if (null == _builtLogger)
+            {
+                return;
+            }
+
+            try
+            {
+                await _builtLogger.LogFileLock.WaitAsync();
+                using FileStream stream = File.Open(_builtLogger.LogFilePath, FileMode.Append);
+                await stream.FlushAsync();
+            }
+            finally
+            {
+                _builtLogger.LogFileLock.Release();
+            }
+
+            _builtLogger = null;
         }
     }
 
-    public class RevenantFileLogger : RevenantLoggerPSCmdlet, ILogger {
+    public class RevenantFileLogger : RevenantLoggerPSCmdlet, ILogger, IRevenantFileLogger
+    {
 
         private readonly string _logPath;
         private readonly string _logFilename;
         private readonly string _logFilePath;
         private readonly SemaphoreSlim _logFileLock = new(1, 1);
         private readonly LogLevel _minimumLogLevel;
-        private string _categoryName;
+        private string? _categoryName;
         private IRevenantConfiguration _runtimeConfig;
         private ConfigDefinition.LoggingRoot _logConfigRoot;
 
@@ -177,7 +192,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
         protected internal SemaphoreSlim LogFileLock { get => _logFileLock; }
         internal LogLevel MinimumLogLevel { get => _minimumLogLevel; }
 
-        internal string CategoryName
+        internal string? CategoryName
         {
             get => _categoryName;
             private set => _categoryName = value;
@@ -195,16 +210,25 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             set => _logConfigRoot = value;
         }
 
-        public RevenantFileLogger(IRevenantConfiguration runtimeConfig, string categoryName) {
+        public RevenantFileLogger(IRevenantConfiguration runtimeConfig, string? categoryName = null)
+        {
             _runtimeConfig = runtimeConfig;
             _logConfigRoot = runtimeConfig.RunningConfig.Logging;
 
-            _logPath = LoggerConfig.LogPath;
+            if (Path.IsPathRooted(_logConfigRoot.LogDirectory))
+            {
+                _logPath = _logConfigRoot.LogDirectory;
+            }
+            else
+            {
+                _logPath = Path.Combine(runtimeConfig.ConfigHome, _logConfigRoot.LogDirectory);
+            }
             _logFilename = _logConfigRoot.LogFilename;
             _logFilePath = Path.Combine(_logPath, _logFilename);
 
             bool levelParse = Enum.TryParse<LogLevel>(LogConfigRoot.MinimumLogLevel, ignoreCase: true, out _minimumLogLevel);
-            if (!levelParse) {
+            if (!levelParse)
+            {
                 ShortLogLevel tempLogLevel;
                 levelParse = Enum.TryParse<ShortLogLevel>(LogConfigRoot.MinimumLogLevel, ignoreCase: true, out tempLogLevel);
                 if (!levelParse)
@@ -221,16 +245,20 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             InitializeLog();
         }
 
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull {
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+        {
             return default;
         }
 
-        public bool IsEnabled(LogLevel logLevel) {
+        public bool IsEnabled(LogLevel logLevel)
+        {
             return logLevel >= _minimumLogLevel;
         }
 
-        public async void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
-            if (!IsEnabled(logLevel)) {
+        public async void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (!IsEnabled(logLevel))
+            {
                 return;
             }
 
@@ -250,44 +278,51 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
 
             //message = $"[{DateTime.Now.ToString(LogConfigRoot.TimestampFormat)} {shortLogLevel}] {_categoryName}(): {state}";
 
-
-
             await WriteToFile(message);
         }
 
-        private async Task WriteToFile(string message) {
+        private async Task WriteToFile(string message)
+        {
 
-            try {
+            try
+            {
                 await _logFileLock.WaitAsync();
 
                 byte[] utf8Text = Encoding.UTF8.GetBytes(message + Environment.NewLine);
                 using FileStream logStream = new(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096);
                 await logStream.WriteAsync(utf8Text);
             }
-            finally {
+            finally
+            {
                 _logFileLock.Release();
             }
         }
 
-        void InitializeLog() {
+        void InitializeLog()
+        {
 #pragma warning disable CA1416 // Validate platform compatibility
 
-            if (!Directory.Exists(LoggerConfig.LogPath)) {
-                if (_runtimeConfig.IsLinux) {
-                    Directory.CreateDirectory(LoggerConfig.LogPath,
+            if (!Directory.Exists(LogPath))
+            {
+                if (_runtimeConfig.IsLinux)
+                {
+                    Directory.CreateDirectory(LogPath,
                         UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
                         UnixFileMode.GroupRead | UnixFileMode.GroupExecute
                         );
                 }
-                else {
-                    Directory.CreateDirectory(LoggerConfig.LogPath);
+                else
+                {
+                    Directory.CreateDirectory(LogPath);
                 }
             }
 
-            if (!File.Exists(_logFilePath)) {
+            if (!File.Exists(_logFilePath))
+            {
                 File.Create(_logFilePath, 4096, FileOptions.WriteThrough | FileOptions.RandomAccess);
             }
-            else {
+            else
+            {
                 File.AppendAllText(_logFilePath, "", Encoding.UTF8);
             }
 

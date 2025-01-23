@@ -5,7 +5,7 @@
         string AppDataDir { get; }
         DateTime CreationTime { get; }
         ConfigDefinition.ConfigRoot DefaultConfig { get; }
-        bool LoggingEnabled { get; set; }
+        bool FileLoggingEnabled { get; set; }
         ConfigDefinition.ConfigRoot RunningConfig { get; set; }
 
         /// <summary>
@@ -38,6 +38,7 @@
         /// </summary>
         string OS { get; }
 
+        void LoadConfig();
         void SaveConfig();
         void SaveConfig(ConfigDefinition.ConfigRoot _incomingConfig);
         void SaveConfig(ConfigDefinition.ConfigRoot _incomingConfig, string _savePath);

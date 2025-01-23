@@ -14,6 +14,7 @@ using Vertical.SpectreLogger;
 using Vertical.SpectreLogger.Options;
 using System.Collections;
 using System.Diagnostics;
+using Vertical.SpectreLogger.Rendering;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
     internal class Utilities : RevenantLoggerPSCmdlet {
@@ -42,36 +43,56 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             return NewLoggerFactory(Config);
         }
         public static ILoggerFactory? NewLoggerFactory(IRevenantConfiguration LoggerConfig) {
-            //string modulePath = Path.GetDirectoryName(typeof(Utilities).Assembly.Location);
-            //string ObjectPool = Path.Combine(modulePath, "Microsoft.Extensions.ObjectPool.dll");
-            //string SysTextJson = Path.Combine(modulePath, "System.Text.Json.dll");
-            //string SysDiagnosticSource = Path.Combine(modulePath, "System.Diagnostics.DiagnosticSource.dll");
+            string timestampFormat = LoggerConfig.LoggingConfig.TimestampFormat;
+            //"[bold grey][[[grey66]{userTimestamp.ToString(LogConfigRoot.TimestampFormat)}[/] [{sev}]{shortLogLevel}[/]]][/] [bold grey46]{shortCategory}:[/] [{msgColor}]{state}[/]");
+            //StringBuilder outputTemplate = new("[bold grey][[[grey66]");
 
-            //System.Runtime.Loader.AssemblyLoadContext ObjPool = AssemblyLoadContext.Default;
-            //ObjPool.LoadFromAssemblyPath(ObjectPool);
-            //ObjPool.LoadFromAssemblyPath(SysTextJson);
-            //ObjPool.LoadFromAssemblyPath(SysDiagnosticSource);
-            //Assembly.LoadFrom(ObjectPool);
-            //Assembly.LoadFrom(SysTextJson);
-            //Assembly.LoadFrom(SysDiagnosticSource);
+            // This template works fine and outputs as expected, the one before does not
 
+            //StringBuilder outputTemplate = new();
+            //outputTemplate.Append($"{{DateTime:{timestampFormat}}}");
+            //outputTemplate.Append("[[{LogLevel}]] {Category}: {Message}");
 
+            // Something is wrong with this template. It causes the log to overwrite
+            // previous log messages on the same line, it does not create a new line
+            StringBuilder outputTemplate = new("[bold grey][[[grey66]{DateTime:");
+            outputTemplate.Append($"{timestampFormat}");
+            outputTemplate.Append("}[/] {LogLevel} ]][/] [bold grey46]{Category}:[/] {Message}\n");
             return LoggerFactory.Create(builder =>
             {
                 builder.ClearProviders();
+                if (LoggerConfig.FileLoggingEnabled)
+                {
+                    builder.AddProvider(new FileLogProvider(config: LoggerConfig));
+                }
                 builder.AddSpectreConsole(config => {
                     config.AddTemplateRenderers()
                     .WriteInForeground()
                     .ConfigureProfiles(profiles => {
+                        //profiles.OutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message}";
+                        //profiles.OutputTemplate = outputTemplate.ToString();
+                        //profiles.OutputTemplate = "{Message}";
                         profiles.PreserveMarkupInFormatStrings = true;
                         profiles.AddTypeStyle<SuccessMessage>("[green1]");
                         profiles.AddTypeStyle<WarnMessage>("[yellow1]");
                         profiles.AddTypeStyle<FailMessage>("[red1]");
+                        profiles.ConfigureOptions<DateTimeRenderer.Options>(renderer => {
+                            if (LoggerConfig.LoggingConfig.UTC)
+                            {
+                                renderer.ValueFactory = () => DateTime.UtcNow;
+                            }
+                            else
+                            {
+                                renderer.ValueFactory = () => DateTime.Now;
+                            }
+                        });
+                        profiles.OutputTemplate = outputTemplate.ToString();
+                        //profiles.OutputTemplate = "[grey85][[{DateTime:T} [red]Info[/]]] {Message}{NewLine+}{Exception}[/]";
                     });
+                    //config.ConfigureProfile(LogLevel.Information, profile => {
+                    //    profile.OutputTemplate = "[grey85][[{DateTime:T} [red]Info[/]]] {Message}{NewLine+}{Exception}[/]";
+                    //});
                 });
-                if (LoggerConfig.LoggingEnabled) {
-                    builder.AddProvider(new FileLogProvider(config: Utilities.Config));
-                }
             });
         }
 
@@ -102,9 +123,15 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             return builtLogger;
         }
 
-        public static ILogger? NewLogger<TLogger>(ILoggerFactory? factory) where TLogger : class
+        //public static ILogger? NewLogger<TLogger>(ILoggerFactory? factory) where TLogger : class
+        //{
+        //    var builtLogger = factory?.CreateLogger(typeof(TLogger));
+        //    return builtLogger;
+        //}
+
+        public static ILogger<TLogger>? NewLogger<TLogger>(ILoggerFactory? factory) where TLogger : class
         {
-            var builtLogger = factory?.CreateLogger(typeof(TLogger));
+            var builtLogger = factory?.CreateLogger<TLogger>();
             return builtLogger;
         }
 

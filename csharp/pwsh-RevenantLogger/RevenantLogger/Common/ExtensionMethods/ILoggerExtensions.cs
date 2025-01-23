@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods

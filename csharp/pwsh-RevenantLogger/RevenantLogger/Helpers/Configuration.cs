@@ -112,7 +112,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
             private set => _defaultConfigFile = value;
         }
 
-        public bool LoggingEnabled
+        public bool FileLoggingEnabled
         {
             get => _runningConfig.Logging.Enabled;
             set => _runningConfig.Logging.Enabled = value;
@@ -224,7 +224,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
             }
         }
 
-        protected internal void LoadConfig()
+        public void LoadConfig()
         {
             if (File.Exists(_defaultConfigFile) == false)
             {

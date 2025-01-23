@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Spectre.Console.Cli;
 using System;
 using System.Collections.Generic;
@@ -15,36 +13,6 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
         private static ILoggerFactory? _sharedLoggerFactory;
         private static ILogger? _logger;
         private static Configuration _loggerConfig;
-        private static IHostBuilder? _genericHostBuilder;
-        private static IHost? _genericHost;
-        //internal IHostBuilder GenericHostBuilder
-        //{
-        //    get {
-        //        _sharedLoggerFactory ??= Utilities.NewLoggerFactory();
-        //        Bootstrap.StaticLoggerFactory = _sharedLoggerFactory;
-        //        _loggerWithType ??= Utilities.NewLogger(type: typeof(Bootstrap), factory: _sharedLoggerFactory);
-        //        _genericHostBuilder ??= BuildAppHost(_sharedLoggerFactory);
-        //        return _genericHostBuilder;
-        //    }
-        //    set {
-        //        _genericHostBuilder = value;
-        //    }
-        //}
-
-        //internal IHost GenericHost
-        //{
-        //    get {
-        //        _sharedLoggerFactory ??= Utilities.NewLoggerFactory();
-        //        Bootstrap.StaticLoggerFactory = _sharedLoggerFactory;
-        //        _loggerWithType ??= Utilities.NewLogger(type: typeof(Bootstrap), factory: _sharedLoggerFactory);
-        //        _genericHostBuilder ??= BuildAppHost(_sharedLoggerFactory);
-        //        _genericHost ??= GenericHostBuilder.Build();
-        //        return _genericHost;
-        //    }
-        //    set {
-        //        _genericHost = value;
-        //    }
-        //}
 
         public DateTime CreationTime
         {
@@ -103,9 +71,9 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
             existingConfigVariable.Description = "This variable holds the Configuration instance for the current session.";
 
 
-            LoggerConfig = GetExistingPSVariable<Configuration>(SessionState: SessionState, psVariable: "__RevenantLoggerExistingConfig");
-            LoggerConfig ??= new Configuration();
-            existingConfigVariable.Value = LoggerConfig;
+            //RevenantConfig = GetExistingPSVariable<Configuration>(SessionState: SessionState, psVariable: "__RevenantLoggerExistingConfig");
+            RevenantConfig ??= new Configuration();
+            existingConfigVariable.Value = RevenantConfig;
             SessionState.PSVariable.Set(existingConfigVariable);
 
             bool logoShown = true;
@@ -128,13 +96,15 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
             var existingLogger = SessionState.PSVariable.GetValue("__RevenantLoggerExistingLogger", null);
 
             if ((null == existingFactory)) {
-                _sharedLoggerFactory = Utilities.NewLoggerFactory(LoggerConfig);
+                _sharedLoggerFactory = Utilities.NewLoggerFactory(RevenantConfig);
                 existingLoggerFactoryVariable.Value = _sharedLoggerFactory;
                 SessionState.PSVariable.Set(existingLoggerFactoryVariable);
             }
 
             if ((null == existingLogger)) {
                 _logger = Utilities.NewLogger(type: typeof(Bootstrap), factory: _sharedLoggerFactory);
+                AddToLoggersList<Bootstrap>(_logger);
+
                 existingLoggerVariable.Value = _logger;
                 SessionState.PSVariable.Set(existingLoggerVariable);
 
@@ -151,6 +121,8 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
                     if (_sharedLoggerFactory != null) {
                         try {
                             _logger = Utilities.NewLogger(type: typeof(Bootstrap), factory: _sharedLoggerFactory);
+                            AddToLoggersList<Bootstrap>(_logger);
+
                             existingLoggerVariable.Value = _logger;
                             SessionState.PSVariable.Set(existingLoggerVariable);
 
@@ -158,11 +130,13 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
                             _logger?.LogDebug("{success}: Created a new logger instance", SuccessMessage.Value);
                         }
                         catch {
-                            _sharedLoggerFactory = Utilities.NewLoggerFactory(LoggerConfig);
+                            _sharedLoggerFactory = Utilities.NewLoggerFactory(RevenantConfig);
                             existingLoggerFactoryVariable.Value = _sharedLoggerFactory;
                             SessionState.PSVariable.Set(existingLoggerFactoryVariable);
 
                             _logger = Utilities.NewLogger(type: typeof(Bootstrap), factory: _sharedLoggerFactory);
+                            AddToLoggersList<Bootstrap>(_logger);
+
                             existingLoggerVariable.Value = _logger;
                             SessionState.PSVariable.Set(existingLoggerVariable);
 
@@ -170,11 +144,13 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
                         }
                     }
                     else {
-                        _sharedLoggerFactory = Utilities.NewLoggerFactory(LoggerConfig);
+                        _sharedLoggerFactory = Utilities.NewLoggerFactory(RevenantConfig);
                         existingLoggerFactoryVariable.Value = _sharedLoggerFactory;
                         SessionState.PSVariable.Set(existingLoggerFactoryVariable);
 
                         _logger = Utilities.NewLogger(type: typeof(Bootstrap), factory: _sharedLoggerFactory);
+                        AddToLoggersList<Bootstrap>(_logger);
+
                         existingLoggerVariable.Value = _logger;
                         SessionState.PSVariable.Set(existingLoggerVariable);
                     }
@@ -190,47 +166,6 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
         }
 
 
-        //internal static IHostBuilder BuildAppHost(ILoggerFactory? sharedFactory)
-        //{
-        //    if (null == sharedFactory)
-        //    {
-        //        sharedFactory = LoggerCreation.NewLoggerFactory(noIlogProvider: true);
-        //    }
 
-        //    string basePath = Directory.GetCurrentDirectory();
-        //    IHostBuilder hostBuilder = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
-        //        .ConfigureAppConfiguration(c => {
-        //            c.SetBasePath(basePath);
-        //        })
-        //        .ConfigureHostOptions(options => {
-        //            options.ShutdownTimeout = TimeSpan.FromSeconds(15);
-        //        })
-        //        .ConfigureLogging(builder => {
-        //            builder.AddSimpleConsole(options => {
-        //                options.IncludeScopes = true;
-        //                options.SingleLine = true;
-        //                options.TimestampFormat = Config.RunningConfig.Logging.TimestampFormat;
-        //            });
-        //            builder.ClearProviders();
-        //            builder.AddProvider(new FileLogILogProvider());
-        //        })
-        //        .ConfigureServices((context, services) => {
-        //            services.AddSingleton<ILoggerFactory>(sharedFactory);
-        //            services.AddSingleton<IFileLogILogProvider, FileLogILogProvider>();
-        //            services.AddSingleton<IFileLogger, FileLogger>();
-        //            services.AddSingleton<ICommandInterceptor, BaseInterceptor>();
-        //            services.AddSingleton<IKeysCmdConfiguration, Configuration>();
-        //            services.AddSingleton<ILDAPHelper, LDAPHelper>();
-        //        });
-
-        //    if (Config.LoggingEnabled && (null != Logger))
-        //    {
-        //        hostBuilder.ConfigureServices((context, services) => {
-        //            services.AddSingleton<ILogger>(Logger);
-        //        });
-        //    }
-
-        //    return hostBuilder;
-        //}
     }
 }
