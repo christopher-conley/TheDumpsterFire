@@ -2396,6 +2396,11 @@ function Edit-Path
 
 Edit-Path -Front "$env:USERPROFILE\.local\bin"
 
+function zcat()
+{
+    Start-Process "$env:USERPROFILE\.local\bin\gzip.exe" -ArgumentList "-cd $args" -NoNewWindow -Wait
+}
+
 function Set-TerminalPID
 {
     [CmdletBinding()]
