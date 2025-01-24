@@ -18,6 +18,8 @@
         /// </summary>
         string ConfigHome { get; }
 
+        string DefaultConfigFile { get; }
+
         /// <summary>
         /// Evaluates to "true" if the host operating system is Linux.
         /// </summary>

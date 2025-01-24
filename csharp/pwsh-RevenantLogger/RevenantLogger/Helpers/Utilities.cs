@@ -62,23 +62,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
         }
         public static ILoggerFactory? NewLoggerFactory(IRevenantConfiguration LoggerConfig) {
             string timestampFormat = LoggerConfig.LoggingConfig.TimestampFormat;
-
-            // This template works fine and outputs as expected, the one before does not
-
-            //StringBuilder outputTemplate = new();
-            //outputTemplate.Append($"{{DateTime:{timestampFormat}}}");
-            //outputTemplate.Append("[[{LogLevel}]] {Category}: {Message}");
-
-            // Something is wrong with this template. It causes the log to overwrite
-            // previous log messages on the same line, it does not create a new line
             string outputTemplate = $"{OpenBracket.Value}{{DateTime:{timestampFormat}}} {{LogLevel}} {CloseBracket.Value} {{Message}}\n{{Exception}}";
-            //StringBuilder outputTemplate = new();
-            //outputTemplate.Append($"{{OpenBracket}}{{DateTime:", OpenBracket.Value);
-            //outputTemplate.Append($"{timestampFormat}");
-            
-            //outputTemplate.Append("}[/] {LogLevel} ]][/] [bold grey46]{CategoryName:C}:[/] {Message}\n");
-            
-            //outputTemplate.Append("} {LogLevel} ]] {Message}\n{Exception}");
 
             return LoggerFactory.Create(builder =>
             {
@@ -105,8 +89,6 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                         {
                             profiles.AddValueStyle(kvp.Key, kvp.Value);
                         }
-
-                        //profiles.AddValueStyle(LogLevel.Information, "[green]");
 
                         profiles.ConfigureOptions<DateTimeRenderer.Options>(renderer => {
                             if (LoggerConfig.LoggingConfig.UTC)
@@ -167,15 +149,15 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
         }
 
         public static Hashtable GetApplicationVersionInfo() {
-            Hashtable returnObject = new();
-            Assembly? selfAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+            Hashtable returnObject = [];
+            Assembly? selfAssembly = Assembly.GetExecutingAssembly();
             FileVersionInfo? version = FileVersionInfo.GetVersionInfo(selfAssembly.Location);
             returnObject.Add("Name", selfAssembly.GetName().ToString());
             returnObject.Add("FullName", selfAssembly.FullName);
             returnObject.Add("FileVersion", (version.FileVersion ?? "Unversioned"));
             returnObject.Add("ImageRuntimeVersion", selfAssembly.ImageRuntimeVersion);
             returnObject.Add("Location", (selfAssembly.Location ?? "Unknown"));
-            returnObject.Add("EntryPoint", (selfAssembly.EntryPoint.ToString() ?? "Unknown"));
+            returnObject.Add("EntryPoint", (selfAssembly.EntryPoint?.ToString() ?? "Unknown"));
             returnObject.Add("DefinedTypes", selfAssembly.DefinedTypes.ToString());
             returnObject.Add("IsFullyTrusted", selfAssembly.IsFullyTrusted.ToString());
 

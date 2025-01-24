@@ -10,11 +10,18 @@ using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Text;
+using System.Runtime.CompilerServices;
+using RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods;
+using System.Reflection;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger {
     public abstract class RevenantLoggerBase : PSCmdlet {
 
         private static Dictionary<string, ILogger?>? _iloggersList;
+
+        private protected ILoggerFactory? _diLoggerFactory;
+        private protected ILogger? _cmdletLogger;
+        private protected IRevenantConfiguration? _config;
         internal static DIContainer? CmdletDIContainer
         {
             get; set;
@@ -79,6 +86,35 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
 
         private protected void init() {
             ;
+        }
+
+        protected internal void InitDIContainer<TCmdlet>([CallerMemberName] string? caller = null) where TCmdlet : class
+        {
+            if (null == CmdletDIContainer)
+            {
+                if (null == this.SessionState)
+                {
+                    CmdletDIContainer = new DIContainer(sessionState: new SessionState());
+                }
+                else
+                {
+                    CmdletDIContainer = new DIContainer(sessionState: this.SessionState);
+                }
+            }
+
+            _diLoggerFactory = SharedLoggerFactory ?? GetDIService<ILoggerFactory>(required: false);
+
+            _cmdletLogger = GetExistingLogger<TCmdlet>();
+            if (null == _cmdletLogger)
+            {
+                _cmdletLogger = _diLoggerFactory?.CreateLogger<TCmdlet>();
+                AddToLoggersList<TCmdlet>(_cmdletLogger);
+            }
+
+            _config = RevenantConfig ?? new Configuration();
+
+            CmdletLogger?.BeginScope(caller ?? "Unknown");
+            CmdletLogger?.RLogDebug($"{caller ?? "Unknown:"} bootstrapping complete");
         }
 
         protected internal static TService? GetDIService<TService>(bool required = false) where TService : class
@@ -168,6 +204,36 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
                 ILoggersList[loggerType] = logger;
                 return;
             }
+        }
+
+        protected internal static bool ExistsInPath(string? fileName = null)
+        {
+            return GetFullPath(fileName) != null;
+        }
+
+        protected internal static string? GetFullPath(string? fileName = null)
+        {
+            if (null == fileName)
+            {
+                return null;
+            }
+
+            if (File.Exists(fileName))
+            {
+                return Path.GetFullPath(fileName);
+            }
+
+            string? values = Environment.GetEnvironmentVariable("PATH");
+
+            foreach (string? path in values?.Split(Path.PathSeparator))
+            {
+                string fullPath = Path.Combine(path, fileName);
+                if (File.Exists(fullPath))
+                {
+                    return fullPath;
+                }
+            }
+            return null;
         }
 
         //private protected void SetMarkupOperators() {

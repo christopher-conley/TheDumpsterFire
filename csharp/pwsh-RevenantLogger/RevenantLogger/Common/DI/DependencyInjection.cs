@@ -148,10 +148,6 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common
             _sharedLoggerFactory = SharedLoggerFactory = Utilities.NewLoggerFactory(_config);
 
             string basePath = _config.ConfigHome;
-            string timestampFormat = _config.LoggingConfig.TimestampFormat;
-            StringBuilder outputTemplate = new("[bold grey][[[grey66]{DateTime:");
-            outputTemplate.Append($"{timestampFormat}");
-            outputTemplate.Append("}[/] {LogLevel} ]][/] [bold grey46]{Category}:[/] {Message}\n");
 
             IHostBuilder hostBuilder = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(c => {

@@ -45,6 +45,14 @@
   <ItemGroup>
     <EmbeddedResource Include="Assets\figlet-fonts\*" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="zzzzOther\Verbs.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="zzzzOther\Verbs.cs" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="PolySharp" Version="1.15.0">

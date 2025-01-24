@@ -74,10 +74,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             set => _userCaller = value;
         }
 
-        public ILogger? CmdletLogger
-        {
-            get => _cmdletLogger;
-        }
+        public new ILogger? CmdletLogger { get => _cmdletLogger; }
 
         public Dictionary<string, ILogger?>? BuiltLoggers
         {
@@ -116,7 +113,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
                 AddToLoggersList<CmdWriteRevenantLog>(_cmdletLogger);
             }
             CmdletLogger?.BeginScope(methodName);
-            CmdletLogger?.RLogDebug("Default constructor called, calling DI constructor");
+            CmdletLogger?.RLogDebug($"{methodName} bootstrapping complete");
         }
 
         protected override void ProcessRecord()
