@@ -3,8 +3,8 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
-    [Cmdlet(VerbsDiagnostic.Test, "SampleCmdlet")]
-    [OutputType(typeof(FavoriteStuff))]
+    //[Cmdlet(VerbsDiagnostic.Test, "SampleCmdlet")]
+    //[OutputType(typeof(FavoriteStuff))]
     public class TestSampleCmdletCommand : PSCmdlet {
         [Parameter(
             Mandatory = true,

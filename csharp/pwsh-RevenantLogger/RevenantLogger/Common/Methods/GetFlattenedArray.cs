@@ -37,7 +37,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
         private protected bool InRecursion { get => _inRecursion; set => _inRecursion = value; }
 
         private protected void GetFlattenedArray(object[] inputArray, bool recursiveCall) {
-            ArrayIterator++;
+            _arrayIterator++;
 
             if (recursiveCall) {
                 InRecursion = true;
@@ -48,7 +48,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
             }
 
             if (inputArray.Length == 0) {
-                ArrayIterator++;
+                _arrayIterator++;
                 SkippedItems++;
                 if ((!InRecursion) && (TotalOriginalItems == 0)) {
                     StringsToParse = new StringInfo();
@@ -56,35 +56,88 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
                 return;
             }
 
-            foreach (var item in inputArray) {
-                if (null == item) {
-                    ArrayIterator++;
+            List<object>? arrayList = [];
+            object[]? loopArray;
+
+            foreach (var item in inputArray)
+            {
+                if (null == item)
+                {
+                    _arrayIterator++;
                     SkippedItems++;
                     continue;
                 }
-                if (item is System.String) {
-                    if ((String.IsNullOrWhiteSpace(item as string))) {
-                        ArrayIterator++;
+
+                arrayList.Add(((PSObject)item).BaseObject);
+            }
+
+            loopArray = arrayList.ToArray();
+
+            foreach (var item in loopArray) {
+                if (null == item) {
+                    _arrayIterator++;
+                    SkippedItems++;
+                    continue;
+                }
+
+                if (item is System.String)
+                {
+                    if ((String.IsNullOrWhiteSpace(item as string)))
+                    {
+                        _arrayIterator++;
                         SkippedItems++;
                         continue;
                     }
                     ArrayList.Add((string)item);
                 }
 
-                else if (item is System.Array) {
-                    if ((null == item) || ((item as object[]).Length == 0)) {
-                        ArrayIterator++;
+                else if (item is System.Array)
+                {
+                    if ((null == item) || ((item as object[]).Length == 0))
+                    {
+                        _arrayIterator++;
                         SkippedItems++;
                         continue;
                     }
                     GetFlattenedArray(inputArray: (object[])item, recursiveCall: true);
                 }
 
-                else {
-                    WriteDebug("Encountered unknown/invalid item type, skipping.");
-                    ArrayIterator++;
-                    SkippedItems++;
-                    continue;
+                else if (item is DirectoryInfo)
+                {
+                    if ((String.IsNullOrWhiteSpace((item as DirectoryInfo).FullName)))
+                    {
+                        _arrayIterator++;
+                        SkippedItems++;
+                        continue;
+                    }
+                    ArrayList.Add((item as DirectoryInfo).FullName);
+                }
+
+                else if (item is FileInfo)
+                {
+                    if ((String.IsNullOrWhiteSpace((item as FileInfo).FullName)))
+                    {
+                        _arrayIterator++;
+                        SkippedItems++;
+                        continue;
+                    }
+                    ArrayList.Add((item as FileInfo).FullName);
+                }
+
+                else
+                {
+                    WriteDebug("Encountered unknown/invalid item type, calling .ToString() method.");
+                    try
+                    {
+                        ArrayList.Add(item.ToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteError(new ErrorRecord(ex, "Error converting item to string", ErrorCategory.InvalidOperation, item));
+                        _arrayIterator++;
+                        SkippedItems++;
+                        continue;
+                    }
                 }
             }
 

@@ -298,7 +298,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
             }
         }
 
-        void InitializeLog()
+        async void InitializeLog()
         {
 #pragma warning disable CA1416 // Validate platform compatibility
 
@@ -316,14 +316,26 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
                     Directory.CreateDirectory(LogPath);
                 }
             }
+            try
+            {
+                await _logFileLock.WaitAsync();
 
-            if (!File.Exists(_logFilePath))
-            {
-                File.Create(_logFilePath, 4096, FileOptions.WriteThrough | FileOptions.RandomAccess);
+                if (!File.Exists(_logFilePath))
+                {
+                    using (var stream = File.Create(_logFilePath, 4096, FileOptions.WriteThrough | FileOptions.RandomAccess | FileOptions.Asynchronous))
+                    {
+                        await stream.FlushAsync();
+                    }
+                }
+                else
+                {
+                    File.AppendAllText(_logFilePath, "", Encoding.UTF8);
+                }
             }
-            else
+
+            finally
             {
-                File.AppendAllText(_logFilePath, "", Encoding.UTF8);
+                _logFileLock.Release();
             }
 
 #pragma warning restore CA1416 // Validate platform compatibility

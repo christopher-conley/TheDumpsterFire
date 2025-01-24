@@ -28,4 +28,30 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
 
         public override string ToString() => "FAILURE";
     }
+
+
+
+
+
+
+
+
+    public sealed class OpenBracket
+    {
+        public static readonly OpenBracket Value = new OpenBracket();
+
+        private OpenBracket() { }
+
+        public override string ToString() => "[bold grey][[[/]";
+    }
+
+    public sealed class CloseBracket
+    {
+        public static readonly CloseBracket Value = new CloseBracket();
+
+        private CloseBracket() { }
+
+        public override string ToString() => "[bold grey]]][/]";
+    }
+
 }

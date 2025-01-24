@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using System;
-using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods
 {
@@ -33,9 +33,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods
         /// <param name="caller">A <see cref="string"/>? containing the name of the method that called this log method. Auto-populated.</param>
         /// <param name="args">An <see cref="object"/>?[] array containing any remaining arguments for the <see cref="ILogger"/> instance, such as
         /// <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
-        public static void RLogDebug(this ILogger logger, string? message, [CallerMemberName] string? caller = "Unknown", params object?[] args)
+        public static void RLogDebug(this ILogger logger, string? message, string? caller = null, params object?[] args)
         {
-            message = $"{caller}[fuchsia]()[/]: {message}";
+            if (String.IsNullOrWhiteSpace(caller) == false)
+            {
+                message = $"[darkgoldenrod]{caller}[/][fuchsia]()[/]: {message}";
+            }
             logger.Log(LogLevel.Debug, message, args);
         }
 
@@ -47,9 +50,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods
         /// <param name="caller">A <see cref="string"/>? containing the name of the method that called this log method. Auto-populated.</param>
         /// <param name="args">An <see cref="object"/>?[] array containing any remaining arguments for the <see cref="ILogger"/> instance, such as
         /// <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
-        public static void RLogTrace(this ILogger logger, string? message, [CallerMemberName] string? caller = "Unknown", params object?[] args)
+        public static void RLogTrace(this ILogger logger, string? message, string? caller = null, params object?[] args)
         {
-            message = $"{caller}[fuchsia]()[/]: {message}";
+            if (String.IsNullOrWhiteSpace(caller) == false)
+            {
+                message = $"[darkgoldenrod]{caller}[/][fuchsia]()[/]: {message}";
+            }
             logger.Log(LogLevel.Trace, message, args);
         }
 
@@ -61,9 +67,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods
         /// <param name="caller">A <see cref="string"/>? containing the name of the method that called this log method. Auto-populated.</param>
         /// <param name="args">An <see cref="object"/>?[] array containing any remaining arguments for the <see cref="ILogger"/> instance, such as
         /// <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
-        public static void RLogInformation(this ILogger logger, string? message, [CallerMemberName] string? caller = "Unknown", params object?[] args)
+        public static void RLogInformation(this ILogger logger, string? message, string? caller = null, params object?[] args)
         {
-            message = $"{caller}[fuchsia]()[/]: {message}";
+            if (String.IsNullOrWhiteSpace(caller) == false)
+            {
+                message = $"[darkgoldenrod]{caller}[/][fuchsia]()[/]: {message}";
+            }
             logger.Log(LogLevel.Information, message, args);
         }
 
@@ -75,9 +84,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods
         /// <param name="caller">A <see cref="string"/>? containing the name of the method that called this log method. Auto-populated.</param>
         /// <param name="args">An <see cref="object"/>?[] array containing any remaining arguments for the <see cref="ILogger"/> instance, such as
         /// <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
-        public static void RLogWarning(this ILogger logger, string? message, [CallerMemberName] string? caller = "Unknown", params object?[] args)
+        public static void RLogWarning(this ILogger logger, string? message, string? caller = null, params object?[] args)
         {
-            message = $"{caller}[fuchsia]()[/]: {message}";
+            if (String.IsNullOrWhiteSpace(caller) == false)
+            {
+                message = $"[darkgoldenrod]{caller}[/][fuchsia]()[/]: {message}";
+            }
             logger.Log(LogLevel.Warning, message, args);
         }
 
@@ -89,9 +101,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods
         /// <param name="caller">A <see cref="string"/>? containing the name of the method that called this log method. Auto-populated.</param>
         /// <param name="args">An <see cref="object"/>?[] array containing any remaining arguments for the <see cref="ILogger"/> instance, such as
         /// <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
-        public static void RLogError(this ILogger logger, string? message, [CallerMemberName] string? caller = "Unknown", params object?[] args)
+        public static void RLogError(this ILogger logger, string? message, string? caller = null, params object?[] args)
         {
-            message = $"{caller}[fuchsia]()[/]: {message}";
+            if (String.IsNullOrWhiteSpace(caller) == false)
+            {
+                message = $"[darkgoldenrod]{caller}[/][fuchsia]()[/]: {message}";
+            }
             logger.Log(LogLevel.Error, message, args);
         }
 
@@ -103,9 +118,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods
         /// <param name="caller">A <see cref="string"/>? containing the name of the method that called this log method. Auto-populated.</param>
         /// <param name="args">An <see cref="object"/>?[] array containing any remaining arguments for the <see cref="ILogger"/> instance, such as
         /// <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
-        public static void RLogCritical(this ILogger logger, string? message, [CallerMemberName] string? caller = "Unknown", params object?[] args)
+        public static void RLogCritical(this ILogger logger, string? message, string? caller = null, params object?[] args)
         {
-            message = $"{caller}[fuchsia]()[/]: {message}";
+            if (String.IsNullOrWhiteSpace(caller) == false)
+            {
+                message = $"[darkgoldenrod]{caller}[/][fuchsia]()[/]: {message}";
+            }
             logger.Log(LogLevel.Critical, message, args);
         }
 
@@ -118,9 +136,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods
         /// <param name="caller">A <see cref="string"/>? containing the name of the method that called this log method. Auto-populated.</param>
         /// <param name="args">An <see cref="object"/>?[] array containing any remaining arguments for the <see cref="ILogger"/> instance, such as
         /// <br>variables that will be interpolated and substituted for placeholders in the <c>message</c> string being logged.</br></param>
-        public static void RLog(this ILogger logger, LogLevel logLevel, string? message, [CallerMemberName] string? caller = "Unknown", params object?[] args)
+        public static void RLog(this ILogger logger, LogLevel logLevel, string? message, string? caller = null, params object?[] args)
         {
-            message = $"{caller}[fuchsia]()[/]: {message}";
+            if (String.IsNullOrWhiteSpace(caller) == false)
+            {
+                message = $"[darkgoldenrod]{caller}[/][fuchsia]()[/]: {message}";
+            }
             logger.Log(logLevel, 0, null, message, args);
         }
     }

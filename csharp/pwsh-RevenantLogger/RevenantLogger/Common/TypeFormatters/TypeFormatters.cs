@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Vertical.SpectreLogger.Formatting;
+using Spectre.Console;
+using Vertical.SpectreLogger.Rendering;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Common.TypeFormatters {
     //internal class ConfigDefinition {
@@ -69,4 +73,26 @@ config.ConfigureProfiles(profile => profile.AddTypeFormatter<Customer>((format, 
     config.ConfigureProfiles(profile => profile.AddTypeFormatters());
 
         */
+
+    [TypeFormatter(typeof(LogLevel))]
+    public class ShortLogLevelFormatter : ICustomFormatter
+    {
+        public string Format(string? format, object? arg, IFormatProvider? formatProvider)
+        {
+            if (arg is not LogLevel logLevel)
+            {
+                logLevel = LogLevel.None;
+            }
+
+            return logLevel switch {
+                LogLevel.Trace => "trace",
+                LogLevel.Debug => "dbg",
+                LogLevel.Information => "info",
+                LogLevel.Warning => "warn",
+                LogLevel.Error => "err",
+                LogLevel.Critical => "crit",
+                _ => String.Empty,
+            };
+        }
+    }
 }

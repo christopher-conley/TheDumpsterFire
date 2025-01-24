@@ -22,7 +22,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
         }
 
         protected RevenantLoggerPSCmdlet() {
-            //BaseBootstrap = new Bootstrap();
+
+            // Generic IHostbuilder doesn't seem to actually respect this environment variable, but
+            // putting it here just in case it does in the future.
+
+            Environment.SetEnvironmentVariable("ASPNETCORE_SUPPRESSSTATUSMESSAGES", true.ToString(), EnvironmentVariableTarget.Process);
         }
     }
 }

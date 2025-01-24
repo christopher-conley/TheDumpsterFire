@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using RosettaTools.Pwsh.Text.RevenantLogger.Common;
 using RosettaTools.Pwsh.Text.RevenantLogger.Helpers;
+using RosettaTools.Pwsh.Text.RevenantLogger.Common.TypeFormatters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,22 +16,32 @@ using Vertical.SpectreLogger.Options;
 using System.Collections;
 using System.Diagnostics;
 using Vertical.SpectreLogger.Rendering;
+using Vertical.SpectreLogger.Core;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
     internal class Utilities : RevenantLoggerPSCmdlet {
-        private readonly ILogger<Utilities> _logger;
+        private readonly ILogger<Utilities>? _logger;
         private static IRevenantConfiguration _config;
 
-        public ILogger<Utilities> Logger
+        public ILogger<Utilities>? Logger
         {
             get => _logger;
         }
 
         public static IRevenantConfiguration Config {
             get {
-                _config ??= new Configuration();
+                _config ??= RevenantConfig ?? new Configuration();
                 return _config;
             }
+        }
+
+        public Utilities()
+        {
+            _config ??= RevenantConfig ?? new Configuration();
+        }
+        public Utilities(ILogger<Utilities> logger)
+        {
+            _logger = logger;
         }
 
         public Utilities(ILogger<Utilities> logger, IRevenantConfiguration config) {
@@ -38,14 +49,19 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             _logger = logger;
         }
 
+        // Filter "Application started" blah blah blah messages from hostbuilder.
+        // Necessary because apparently IHostBuilder does not respect the
+        // ASPNETCORE_SUPPRESSSTATUSMESSAGES environment variable
+        public static bool FilterChattyASPNET(in LogEventContext context)
+        {
+            return (context.CategoryName != "Microsoft.Hosting.Lifetime");
+        }
         public static ILoggerFactory? NewLoggerFactory()
         {
             return NewLoggerFactory(Config);
         }
         public static ILoggerFactory? NewLoggerFactory(IRevenantConfiguration LoggerConfig) {
             string timestampFormat = LoggerConfig.LoggingConfig.TimestampFormat;
-            //"[bold grey][[[grey66]{userTimestamp.ToString(LogConfigRoot.TimestampFormat)}[/] [{sev}]{shortLogLevel}[/]]][/] [bold grey46]{shortCategory}:[/] [{msgColor}]{state}[/]");
-            //StringBuilder outputTemplate = new("[bold grey][[[grey66]");
 
             // This template works fine and outputs as expected, the one before does not
 
@@ -55,9 +71,15 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
 
             // Something is wrong with this template. It causes the log to overwrite
             // previous log messages on the same line, it does not create a new line
-            StringBuilder outputTemplate = new("[bold grey][[[grey66]{DateTime:");
-            outputTemplate.Append($"{timestampFormat}");
-            outputTemplate.Append("}[/] {LogLevel} ]][/] [bold grey46]{Category}:[/] {Message}\n");
+            string outputTemplate = $"{OpenBracket.Value}{{DateTime:{timestampFormat}}} {{LogLevel}} {CloseBracket.Value} {{Message}}\n{{Exception}}";
+            //StringBuilder outputTemplate = new();
+            //outputTemplate.Append($"{{OpenBracket}}{{DateTime:", OpenBracket.Value);
+            //outputTemplate.Append($"{timestampFormat}");
+            
+            //outputTemplate.Append("}[/] {LogLevel} ]][/] [bold grey46]{CategoryName:C}:[/] {Message}\n");
+            
+            //outputTemplate.Append("} {LogLevel} ]] {Message}\n{Exception}");
+
             return LoggerFactory.Create(builder =>
             {
                 builder.ClearProviders();
@@ -65,17 +87,27 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                 {
                     builder.AddProvider(new FileLogProvider(config: LoggerConfig));
                 }
+                
                 builder.AddSpectreConsole(config => {
+                    config.SetLogEventFilter(new LogEventFilterDelegate(Utilities.FilterChattyASPNET));
                     config.AddTemplateRenderers()
                     .WriteInForeground()
                     .ConfigureProfiles(profiles => {
-                        //profiles.OutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message}";
-                        //profiles.OutputTemplate = outputTemplate.ToString();
-                        //profiles.OutputTemplate = "{Message}";
                         profiles.PreserveMarkupInFormatStrings = true;
                         profiles.AddTypeStyle<SuccessMessage>("[green1]");
                         profiles.AddTypeStyle<WarnMessage>("[yellow1]");
                         profiles.AddTypeStyle<FailMessage>("[red1]");
+                        profiles.AddTypeStyle<DateTimeRenderer.Value>("[grey66]");
+                        profiles.AddValueStyle(false, "[red1]");
+                        profiles.AddValueStyle(true, "[palegreen3]");
+
+                        foreach (KeyValuePair<LogLevel, string> kvp in LogLevelColors)
+                        {
+                            profiles.AddValueStyle(kvp.Key, kvp.Value);
+                        }
+
+                        //profiles.AddValueStyle(LogLevel.Information, "[green]");
+
                         profiles.ConfigureOptions<DateTimeRenderer.Options>(renderer => {
                             if (LoggerConfig.LoggingConfig.UTC)
                             {
@@ -87,7 +119,6 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                             }
                         });
                         profiles.OutputTemplate = outputTemplate.ToString();
-                        //profiles.OutputTemplate = "[grey85][[{DateTime:T} [red]Info[/]]] {Message}{NewLine+}{Exception}[/]";
                     });
                     //config.ConfigureProfile(LogLevel.Information, profile => {
                     //    profile.OutputTemplate = "[grey85][[{DateTime:T} [red]Info[/]]] {Message}{NewLine+}{Exception}[/]";
@@ -101,14 +132,14 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
 
             var loggerFactory = NewLoggerFactory(Config);
 
-            var builtLogger = loggerFactory.CreateLogger(type);
+            var builtLogger = loggerFactory?.CreateLogger(type);
             return builtLogger;
         }
         public static ILogger? NewLogger(Type type, IRevenantConfiguration LoggerConfig) {
 
             var loggerFactory = NewLoggerFactory(LoggerConfig);
 
-            var builtLogger = loggerFactory.CreateLogger(type);
+            var builtLogger = loggerFactory?.CreateLogger(type);
             return builtLogger;
         }
 
@@ -178,18 +209,18 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                 FigletText logoText;
                 try {
                     font = FigletFont.Load(stream);
-                    logoText = new FigletText(font, "RosettaTools Revenant Logger")
+                    logoText = new FigletText(font, "Revenant Logger")
                         .Centered()
                         .Color(Color.Red);
                     if ((null == logoText) || (font == FigletFont.Default)) {
-                        AnsiConsole.MarkupLine("[bright yellow]RosettaTools Revenant Logger[/]");
+                        AnsiConsole.MarkupLine("[bright yellow]Revenant Logger[/]");
                         return;
                     }
                     AnsiConsole.Write(logoText);
                     AnsiConsole.Write(new Rule($"[yellow]Figlet font: {shortFontName}[/]\n\n").Justify(Justify.Right).RuleStyle("red"));
                 }
                 catch {
-                    AnsiConsole.MarkupLine("[bright yellow]CRosettaTools Revenant Logger[/]");
+                    AnsiConsole.MarkupLine("[bright yellow]Revenant Logger[/]");
                     return;
                 }
             }

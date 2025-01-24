@@ -57,6 +57,20 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
             get; set;
         }
 
+        public static Dictionary<LogLevel, string> LogLevelColors
+        {
+            get {
+                return new Dictionary<LogLevel, string> {
+                    { LogLevel.Trace, "[blue]" },
+                    { LogLevel.Debug, "[purple]" },
+                    { LogLevel.Information, "[green]" },
+                    { LogLevel.Warning, "[yellow]" },
+                    { LogLevel.Error, "[red]" },
+                    { LogLevel.Critical, "[rapidblink red]" }
+                };
+            }
+        }
+
         private protected RevenantLoggerBase() {
             //string modulePath = Path.GetDirectoryName(typeof(RevenantLoggerBase).Assembly.Location);
             //var loadContext = new CustomAssemblyLoadContext(modulePath);
