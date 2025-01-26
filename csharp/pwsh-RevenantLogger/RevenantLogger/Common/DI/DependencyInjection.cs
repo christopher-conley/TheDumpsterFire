@@ -138,7 +138,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common
             AddToLoggersList<DIContainer>(_logger);
 
             _logger.RLogDebug("DIContainer created.");
-            _logger.RLogDebug("Raw log call in DI constructor, DIContainer created.");
+
+            if (RevenantConfig.RunningConfig.ShowLogo)
+            {
+                Utilities.ShowLogo();
+            }
         }
 
         private IHostBuilder BuildAppHost()

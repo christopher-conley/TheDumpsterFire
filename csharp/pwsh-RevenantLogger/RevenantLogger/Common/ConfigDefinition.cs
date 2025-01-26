@@ -14,7 +14,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
         public ConfigRoot Config = new();
         public class ConfigRoot {
 
-            [Description("Whether to show the logo on startup. Default is false.")]
+            [Description("Whether to show the logo (once) on DI container startup in a random Figlet text font, just because it's fun. Default is false.")]
             [JsonProperty(nameof(ShowLogo), DefaultValueHandling = DefaultValueHandling.Populate)]
             [DefaultValue(false)]
             public bool ShowLogo { get; set; }
