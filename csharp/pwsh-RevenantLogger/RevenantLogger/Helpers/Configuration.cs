@@ -201,15 +201,42 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
             }
 #pragma warning restore CA1416 // Validate platform compatibility
             LoadConfig();
-            if (String.IsNullOrWhiteSpace(_runningConfig.Logging.TimestampFormat))
+
+            if (String.IsNullOrWhiteSpace(_runningConfig.Logging.DateFormat))
             {
-                _runningConfig.Logging.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fff";
+                _runningConfig.Logging.DateFormat = "yyyy-MM-dd";
             }
             else
             {
-                bool isValidFormat = false;
-                isValidFormat = DateTime.TryParse(_runningConfig.Logging.TimestampFormat, out DateTime validatedDateTime);
-                _runningConfig.Logging.TimestampFormat = isValidFormat ? _runningConfig.Logging.TimestampFormat : "yyyy-MM-ddTHH:mm:ss.fff";
+                try
+                {
+                    DateTime.Now.ToString(_runningConfig.Logging.DateFormat);
+                }
+                catch (Exception)
+                {
+                    _runningConfig.Logging.DateFormat = "yyyy-MM-dd";
+                }
+            }
+
+            if (String.IsNullOrWhiteSpace(_runningConfig.Logging.TimeFormat))
+            {
+                _runningConfig.Logging.TimeFormat = "HH:mm:ss.fffK";
+            }
+            else
+            {
+                try
+                {
+                    DateTime.Now.ToString(_runningConfig.Logging.TimeFormat);
+                }
+                catch (Exception)
+                {
+                    _runningConfig.Logging.TimeFormat = "HH:mm:ss.fffK";
+                }
+            }
+
+            if (null == _runningConfig.Logging.DateTimeSeperator)
+            {
+                _runningConfig.Logging.DateTimeSeperator = "";
             }
 
             _logPath = Path.Combine(_configHome, _runningConfig.Logging.LogDirectory);
@@ -282,7 +309,9 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
                     Enabled = true,
                     LogDirectory = "logs",
                     LogFilename = "revenantlogger.log",
-                    TimestampFormat = "yyyy-MM-ddTHH:mm:ss.ffffK",
+                    DateFormat = "yyyy-MM-dd",
+                    TimeFormat = "HH:mm:ss.ffffK",
+                    DateTimeSeperator = "T",
                     UTC = false,
                     MinimumLogLevel = "Information"
                 }

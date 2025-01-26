@@ -10,6 +10,7 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Collections;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
 
@@ -19,9 +20,6 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
     //[OutputType(typeof(CmdWriteRevenantLog))]
     public class CmdWriteRevenantLog : RevenantLoggerPSCmdlet
     {
-        private IRevenantConfiguration? _config;
-        private ILogger? _cmdletLogger;
-        private ILoggerFactory? _diLoggerFactory;
         private string? _userLogLevel;
         private string? _userCaller;
 
@@ -39,7 +37,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
         [Parameter(Mandatory = true, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         [Alias("Messages", "MessageArray")]
         [AllowNull()]
-        [ValidateTypes(typeof(string), typeof(Array))]
+        [ValidateTypes(typeof(string), typeof(string[]), typeof(PSObject), typeof(PSObject[]), typeof(object), typeof(object[]), typeof(Array))]
 
         public PSObject Message
         {
@@ -47,7 +45,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             set;
         }
 
-        [Parameter(Mandatory = false, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
         [Alias("LogLevel", "Level")]
         [AllowNull()]
         [ValidateSet("Trace", "trc", "Debug", "dbg", "Information", "info", "Warning", "warn",
@@ -63,7 +61,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             set => _userLogLevel = value.ToString();
         }
 
-        [Parameter(Mandatory = false, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
         [Alias("Scope", "Category")]
         [AllowNull()]
         //[ValidateTypes(typeof(string))]
@@ -92,60 +90,47 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             base.init();
             string methodName = MethodBase.GetCurrentMethod().Name;
 
-            if (null == CmdletDIContainer)
-            {
-                if (null == this.SessionState)
-                {
-                    CmdletDIContainer = new DIContainer(sessionState: new SessionState());
-                }
-                else
-                {
-                    CmdletDIContainer = new DIContainer(sessionState: this.SessionState);
-                }
-            }
-
-            _diLoggerFactory = SharedLoggerFactory ?? GetDIService<ILoggerFactory>(required: false);
-
-            _cmdletLogger = GetExistingLogger<CmdWriteRevenantLog>();
-            if (null == _cmdletLogger)
-            {
-                _cmdletLogger = _diLoggerFactory?.CreateLogger<CmdWriteRevenantLog>();
-                AddToLoggersList<CmdWriteRevenantLog>(_cmdletLogger);
-            }
-            CmdletLogger?.BeginScope(methodName);
-            CmdletLogger?.RLogDebug($"{methodName} bootstrapping complete");
+            InitDIContainer<CmdWriteRevenantLog>();
         }
 
         protected override void ProcessRecord()
         {
             CmdletLogger?.BeginScope("ProcessRecord");
             CmdletLogger?.RLogDebug("Inside Write-RevenantLogger ProcessRecord");
+            Type? inputBaseType = Message.BaseObject.GetType();
 
             if (null == Message)
             {
                 CmdletLogger?.RLogDebug("Message is null, returning");
                 return;
             }
-
-            Type? inputBaseType = Message.BaseObject.GetType();
-            CmdletLogger?.RLogDebug($"Message type is {StringExtensions.EscapeMarkup(inputBaseType.ToString())}");
             
             if (inputBaseType == typeof(string))
             {
                 LogMessage(Severity, StringExtensions.EscapeMarkup(Message.ToString()), Caller?.ToString());
-                //CmdletLogger?.RLogInformation(StringExtensions.EscapeMarkup(Message.ToString()));
             }
             else if (inputBaseType == typeof(object[]) || inputBaseType == typeof(System.Object[]))
             {
-                GetFlattenedArray((object[])Message.BaseObject, recursiveCall: false);
+                LogArray(Severity, inputBaseType, Caller);
+            }
 
-                if (null != FlattenedArray)
+            //else if (inputBaseType == typeof(Hashtable) || inputBaseType == typeof(OrderedHashtable) || inputBaseType == typeof(System.Collections.Specialized.OrderedDictionary))
+            else if (inputBaseType.ToString().Contains("Hashtable") || inputBaseType.ToString().Contains("Dictionary"))
+            {
+                LogDictionary(Severity, inputBaseType, Caller);
+            }
+
+            else
+            {
+                try
                 {
-                    foreach (string? item in FlattenedArray)
-                    {
-                        LogMessage(Severity, StringExtensions.EscapeMarkup(item), Caller?.ToString());
-                        //CmdletLogger?.RLogInformation(StringExtensions.EscapeMarkup(item));
-                    }
+                    CmdletLogger?.RLogDebug($"Message type is {StringExtensions.EscapeMarkup(inputBaseType.ToString())}");
+                    LogMessage(Severity, StringExtensions.EscapeMarkup(Message.ToString()), Caller?.ToString());
+                }
+                catch (Exception ex)
+                {
+                    WriteWarning($"Error processing message: {ex.Message}");
+                    CmdletLogger?.RLogWarning($"Error processing message: {ex.Message}");
                 }
             }
         }
@@ -159,7 +144,41 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             //WriteObject(null);
         }
 
+        private void LogArray(string logLevel, Type inputType, string? caller = null)
+        {
+            GetFlattenedArray((object[])Message.BaseObject, recursiveCall: false);
 
+            if (null != FlattenedArray)
+            {
+                if (inputType.ToString().Contains("Hashtable") || inputType.ToString().Contains("Dictionary"))
+                {
+                    LogDictionary(Severity, inputType, Caller);
+                }
+                else
+                {
+                    foreach (string? item in FlattenedArray)
+                    {
+                        LogMessage(Severity, StringExtensions.EscapeMarkup(item), Caller?.ToString());
+                    }
+                }
+            }
+        }
+        private void LogDictionary(string logLevel, Type inputType, string? caller = null)
+        {
+            IDictionary? inputHash = Message.BaseObject as IDictionary;
+
+            if (null != inputHash)
+            {
+                LogMessage(Severity, $"Object: {StringExtensions.EscapeMarkup(inputType.ToString())}", Caller?.ToString());
+                foreach (DictionaryEntry? item in inputHash)
+                {
+                    string itemKey = StringExtensions.EscapeMarkup(item?.Key?.ToString());
+                    string itemValue = StringExtensions.EscapeMarkup(item?.Value?.ToString());
+                    LogMessage(Severity, $"    [cornflowerBlue]Key[/]:   {itemKey}", Caller?.ToString());
+                    LogMessage(Severity, $"    [salmon1]Value[/]: {itemValue}", Caller?.ToString());
+                }
+            }
+        }
         private void LogMessage(string logLevel, string message, string? caller = null)
         {
             if (String.IsNullOrWhiteSpace(logLevel))

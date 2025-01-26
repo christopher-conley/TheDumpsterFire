@@ -85,11 +85,11 @@ config.ConfigureProfiles(profile => profile.AddTypeFormatter<Customer>((format, 
             }
 
             return logLevel switch {
-                LogLevel.Trace => "trace",
-                LogLevel.Debug => "dbg",
+                LogLevel.Trace => "trc ",
+                LogLevel.Debug => "dbg ",
                 LogLevel.Information => "info",
                 LogLevel.Warning => "warn",
-                LogLevel.Error => "err",
+                LogLevel.Error => "err ",
                 LogLevel.Critical => "crit",
                 _ => String.Empty,
             };

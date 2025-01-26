@@ -18,10 +18,9 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
     public abstract class RevenantLoggerBase : PSCmdlet {
 
         private static Dictionary<string, ILogger?>? _iloggersList;
-
-        private protected ILoggerFactory? _diLoggerFactory;
+        private protected static ILoggerFactory _sharedLoggerFactory;
         private protected ILogger? _cmdletLogger;
-        private protected IRevenantConfiguration? _config;
+        internal protected static IRevenantConfiguration _config;
         internal static DIContainer? CmdletDIContainer
         {
             get; set;
@@ -36,9 +35,10 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
             get; set;
         }
 
-        internal static ILoggerFactory? SharedLoggerFactory
+        internal static ILoggerFactory SharedLoggerFactory
         {
-            get; set;
+            get => _sharedLoggerFactory;
+            set => _sharedLoggerFactory = value;
         }
 
         protected internal ILogger? CmdletLogger
@@ -59,9 +59,15 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
             get; set;
         }
 
-        internal static IRevenantConfiguration? RevenantConfig
+        internal static IRevenantConfiguration RevenantConfig
         {
-            get; set;
+            get => _config;
+            set => _config = value;
+        }
+
+        internal static string DateTimeSep
+        {
+            get => RevenantConfig.LoggingConfig.DateTimeSeperator ?? "";
         }
 
         public static Dictionary<LogLevel, string> LogLevelColors
@@ -73,7 +79,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
                     { LogLevel.Information, "[green]" },
                     { LogLevel.Warning, "[yellow]" },
                     { LogLevel.Error, "[red]" },
-                    { LogLevel.Critical, "[rapidblink red]" }
+                    { LogLevel.Critical, "[reverse rapidblink red]" }
                 };
             }
         }
@@ -102,12 +108,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
                 }
             }
 
-            _diLoggerFactory = SharedLoggerFactory ?? GetDIService<ILoggerFactory>(required: false);
+            _sharedLoggerFactory = SharedLoggerFactory ?? GetDIService<ILoggerFactory>(required: false);
 
             _cmdletLogger = GetExistingLogger<TCmdlet>();
             if (null == _cmdletLogger)
             {
-                _cmdletLogger = _diLoggerFactory?.CreateLogger<TCmdlet>();
+                _cmdletLogger = _sharedLoggerFactory?.CreateLogger<TCmdlet>();
                 AddToLoggersList<TCmdlet>(_cmdletLogger);
             }
 
@@ -129,6 +135,31 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
             }
             //return CmdletDIContainer.DDIServiceProvider.GetService<TService>();
         }
+
+        internal static string DateFormatStamp()
+        {
+            if (RevenantConfig.LoggingConfig.UTC)
+            {
+                return $"[dim cyan]{DateTime.UtcNow.ToString(RevenantConfig.LoggingConfig.DateFormat)}[/]";
+            }
+            else
+            {
+                return $"[dim cyan]{DateTime.Now.ToString(RevenantConfig.LoggingConfig.DateFormat)}[/]";
+            }
+        }
+
+        internal static string TimeFormatStamp()
+        {
+            if (RevenantConfig.LoggingConfig.UTC)
+            {
+                return $"[cyan]{DateTime.UtcNow.ToString(RevenantConfig.LoggingConfig.TimeFormat)}[/]";
+            }
+            else
+            {
+                return $"[cyan]{DateTime.Now.ToString(RevenantConfig.LoggingConfig.TimeFormat)}[/]";
+            }
+        }
+
         protected internal static TObject? GetExistingPSVariable<TObject>(SessionState SessionState, string psVariable) where TObject : class
         {
             //var existingObject = SessionState.PSVariable.Get(psVariable);

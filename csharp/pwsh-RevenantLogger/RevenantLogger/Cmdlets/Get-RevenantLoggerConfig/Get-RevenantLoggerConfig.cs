@@ -19,11 +19,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets
     [OutputType(typeof(string))]
     public class CmdGetRevenantLoggerConfig : RevenantLoggerPSCmdlet
     {
-        private IRevenantConfiguration? _config;
         private string? _configOnDisk;
-        private ILoggerFactory? _diLoggerFactory;
-        private ILogger? _cmdletLogger;
-
 
         public new ILogger? CmdletLogger { get => _cmdletLogger; }
 

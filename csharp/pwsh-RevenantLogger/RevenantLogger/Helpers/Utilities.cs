@@ -21,7 +21,6 @@ using Vertical.SpectreLogger.Core;
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
     internal class Utilities : RevenantLoggerPSCmdlet {
         private readonly ILogger<Utilities>? _logger;
-        private static IRevenantConfiguration _config;
 
         public ILogger<Utilities>? Logger
         {
@@ -30,8 +29,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
 
         public static IRevenantConfiguration Config {
             get {
-                _config ??= RevenantConfig ?? new Configuration();
-                return _config;
+                return RevenantConfig ?? new Configuration();
             }
         }
 
@@ -61,8 +59,14 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             return NewLoggerFactory(Config);
         }
         public static ILoggerFactory? NewLoggerFactory(IRevenantConfiguration LoggerConfig) {
-            string timestampFormat = LoggerConfig.LoggingConfig.TimestampFormat;
-            string outputTemplate = $"{OpenBracket.Value}{{DateTime:{timestampFormat}}} {{LogLevel}} {CloseBracket.Value} {{Message}}\n{{Exception}}";
+            //string timestampFormat = LoggerConfig.LoggingConfig.TimestampFormat;
+            string dateFormat = LoggerConfig.LoggingConfig.DateFormat;
+            string timeFormat = LoggerConfig.LoggingConfig.TimeFormat;
+            //string outputTemplate = $"{OpenBracket.Value}{{DateTime:{timestampFormat}}} {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
+            //string outputTemplate = $"{OpenBracket.Value}{FormattedTimestamp.Value} {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
+            //string outputTemplate = $"{OpenBracket.Value}[dim cyan]{{DateTime:{dateFormat}}}[/]{Sep.Value}[dim cyan]{{DateTime:{timeFormat}}}[/] {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
+            //string outputTemplate = $"{OpenBracket.Value}{DateFormatStamp()}{DateTimeSep}{TimeFormatStamp()} {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
+            string outputTemplate = $"{OpenBracket.Value}[dim cyan]{{DateTime:{dateFormat}}}[/][dim grey]{Sep.Value}[/][dim cyan]{{DateTime:{timeFormat}}}[/] {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
 
             return LoggerFactory.Create(builder =>
             {
@@ -81,7 +85,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                         profiles.AddTypeStyle<SuccessMessage>("[green1]");
                         profiles.AddTypeStyle<WarnMessage>("[yellow1]");
                         profiles.AddTypeStyle<FailMessage>("[red1]");
-                        profiles.AddTypeStyle<DateTimeRenderer.Value>("[grey66]");
+                        profiles.AddTypeStyle<DateTimeRenderer.Value>("[dim cyan]");
                         profiles.AddValueStyle(false, "[red1]");
                         profiles.AddValueStyle(true, "[palegreen3]");
 

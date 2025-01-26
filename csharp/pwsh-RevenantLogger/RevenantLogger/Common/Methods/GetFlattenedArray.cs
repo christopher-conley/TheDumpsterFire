@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -67,8 +68,14 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
                     SkippedItems++;
                     continue;
                 }
-
-                arrayList.Add(((PSObject)item).BaseObject);
+                try
+                {
+                    arrayList.Add(((PSObject)item).BaseObject);
+                }
+                catch
+                {
+                    arrayList.Add(item);
+                }
             }
 
             loopArray = arrayList.ToArray();

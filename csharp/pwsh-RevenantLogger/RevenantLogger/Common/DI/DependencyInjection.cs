@@ -25,10 +25,9 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common
         private IServiceProvider _diServiceProvider;
         private IHostBuilder? _genericHostBuilder;
         private ILoggingBuilder? _loggingBuilder;
-        private ILoggerFactory? _sharedLoggerFactory;
         private IHost? _genericHost;
         private ILogger<DIContainer>? _logger;
-        private IRevenantConfiguration? _config;
+        //private IRevenantConfiguration? _config;
         private PSVariable _existingDIContainerVariable = new(_PSVariableDIContainer, null, ScopedItemOptions.AllScope | ScopedItemOptions.None);
 
         public DateTime CreationTime { get => _creationTime; }
@@ -163,7 +162,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common
                     services.AddSingleton<IFileLogProvider, FileLogProvider>();
                     services.AddSingleton<IRevenantFileLogger, RevenantFileLogger>();
                     services.AddSingleton<ILogger, RevenantFileLogger>();
-                    services.AddLogging();
+                    //services.AddLogging();
                 });
 
             return hostBuilder;

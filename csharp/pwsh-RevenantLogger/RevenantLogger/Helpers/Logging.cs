@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
 {
     public class LoggerObject : RevenantLoggerPSCmdlet, ILogger {
-        private IRevenantConfiguration _config;
         private ILogger _logger;
         private ILogger _pseudoLogger;
         private bool _hasType = true;
@@ -59,7 +58,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
                 }
                 else
                 {
-                    Log(message, userLogLevel, caller: caller );
+                    Log(message, userLogLevel, caller: caller);
                 }
             }
 
@@ -119,12 +118,10 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
 
     public class FileLogProvider : RevenantLoggerPSCmdlet, ILoggerProvider, IFileLogProvider
     {
-
-        private readonly IRevenantConfiguration? _config;
         private readonly ILogger<FileLogProvider>? _logger;
         private RevenantFileLogger? _builtLogger;
 
-        public IRevenantConfiguration? LoggingConfig { get => _config; }
+        public IRevenantConfiguration LoggingConfig { get => _config; }
         public ILogger<FileLogProvider>? Logger { get => _logger; }
 
         public FileLogProvider()
@@ -266,14 +263,14 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
             var message = formatter(state, exception);
 
             DateTime userTimestamp = (LogConfigRoot.UTC) ? DateTime.UtcNow : DateTime.Now;
-
+            string formattedTimestamp = $"{userTimestamp.ToString(LogConfigRoot.DateFormat)}{Sep.Value}{userTimestamp.ToString(LogConfigRoot.TimeFormat)}";
             //string fileLogState = state?.ToString() ?? String.Empty;
             //fileLogState = Markup.Remove(fileLogState);
 
 
             //message = $"[{userTimestamp.ToString(LogConfigRoot.TimestampFormat)} {shortLogLevel}] {fileLogState}";
 
-            message = $"[{userTimestamp.ToString(LogConfigRoot.TimestampFormat)} {shortLogLevel}] {state}";
+            message = $"[{formattedTimestamp} {shortLogLevel}] {state}";
 
 
             //message = $"[{DateTime.Now.ToString(LogConfigRoot.TimestampFormat)} {shortLogLevel}] {_categoryName}(): {state}";
@@ -341,36 +338,4 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
 #pragma warning restore CA1416 // Validate platform compatibility
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //public class BareLogger : IBareLogger {
-    //    private readonly ILogger<IBareLogger> logger;
-
-    //    public BareLogger(ILogger<IBareLogger> _logger) {
-    //        logger = _logger;
-    //    }
-
-    //    public IDisposable? BeginScope<TState>(TState state) where TState : notnull {
-    //        return logger.BeginScope(state);
-    //    }
-
-    //    public bool IsEnabled(LogLevel logLevel) {
-    //        return logger.IsEnabled(logLevel);
-    //    }
-
-    //    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
-    //        logger.Log(logLevel, eventId, state, exception, formatter);
-    //    }
-    //}
 }

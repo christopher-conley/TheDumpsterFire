@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.VisualBasic;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -40,10 +41,24 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
             [JsonProperty(nameof(LogFilename))]
             public string LogFilename { get; set; }
 
-            [Description("The format of the timestamp in the log file, as defined here:" +
-                "https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")]
-            [JsonProperty(nameof(TimestampFormat))]
-            public string TimestampFormat { get; set; }
+            [Description("The format of the date portion of the timestamp in a log line, as defined here:" +
+    "https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")]
+            [JsonProperty(nameof(DateFormat))]
+            public string DateFormat { get; set; }
+
+            [Description("The format of the time portion of the timestamp in a log line, as defined here:" +
+    "https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")]
+            [JsonProperty(nameof(TimeFormat))]
+            public string TimeFormat { get; set; }
+
+            [Description("Character or string that separates the date and time portions of a DateTime in a log line.")]
+            [JsonProperty(nameof(DateTimeSeperator))]
+            public string DateTimeSeperator { get; set; }
+
+    //        [Description("The format of the timestamp in the log file, as defined here:" +
+    //"https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")]
+    //        [JsonProperty(nameof(TimestampFormat))]
+    //        public string TimestampFormat { get; set; }
 
             [JsonProperty(nameof(UTC))]
             public bool UTC { get; set; }
