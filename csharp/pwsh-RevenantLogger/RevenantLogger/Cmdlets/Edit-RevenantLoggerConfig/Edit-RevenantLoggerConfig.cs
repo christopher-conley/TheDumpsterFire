@@ -11,7 +11,6 @@ using RosettaTools.Pwsh.Text.RevenantLogger.Common;
 using RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods;
 using System.Reflection;
 using System.Diagnostics;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets
 {
