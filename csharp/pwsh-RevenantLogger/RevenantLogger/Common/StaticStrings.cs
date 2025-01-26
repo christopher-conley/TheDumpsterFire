@@ -14,7 +14,6 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common
         internal static readonly string _PSVariableLogger = "__RevenantLoggerExistingLogger";
         internal static readonly string _PSVariableLoggerFactory = "__RevenantLoggerExistingLoggerFactory";
         internal static readonly string _PSVariableLogoShown = "__RevenantLoggerLogoShown";
-        internal static readonly string SepColor = "[dim grey]";
         internal static readonly string CloseTag = "[/]";
     }
 }

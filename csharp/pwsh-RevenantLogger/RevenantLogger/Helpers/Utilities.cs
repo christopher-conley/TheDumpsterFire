@@ -69,7 +69,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             //string outputTemplate = $"{OpenBracket.Value}{DateFormatStamp()}{DateTimeSep}{TimeFormatStamp()} {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
 
             //string outputTemplate = $"{OpenBracket.Value}[dim cyan]{{DateTime:{dateFormat}}}[/][dim grey]{Sep.Value}[/][cyan]{{DateTime:{timeFormat}}}[/] {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
-            string outputTemplate = $"{OpenBracket.Value}{{DateTime:{dateFormat}}}{SepColor}{Sep.Value}{CloseTag}{{DateTime:{timeFormat}}} {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
+            string outputTemplate = $"{OpenBracket.Value}{{DateTime:{dateFormat}}}[{ColorConfig.TimestampSeperator}]{Sep.Value}{CloseTag}{{DateTime:{timeFormat}}} {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
 
             return LoggerFactory.Create(builder =>
             {
@@ -88,9 +88,9 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                         profiles.AddTypeStyle<SuccessMessage>("[green1]");
                         profiles.AddTypeStyle<WarnMessage>("[yellow1]");
                         profiles.AddTypeStyle<FailMessage>("[red1]");
-                        profiles.AddTypeStyle<DateTimeRenderer.Value>("[dim cyan]");
-                        profiles.AddValueStyle(false, "[red1]");
-                        profiles.AddValueStyle(true, "[palegreen3]");
+                        profiles.AddTypeStyle<DateTimeRenderer.Value>($"[{ColorConfig.Timestamp}]");
+                        profiles.AddValueStyle(false, $"[{ColorConfig.BoolFalse}]");
+                        profiles.AddValueStyle(true, $"[{ColorConfig.BoolTrue}]");
 
                         foreach (KeyValuePair<LogLevel, string> kvp in LogLevelColors)
                         {

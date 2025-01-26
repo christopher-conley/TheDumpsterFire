@@ -66,6 +66,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
             set => _config = value;
         }
 
+        internal static ConfigDefinition.LoggingColorRoot ColorConfig
+        {
+            get => RevenantConfig.LoggingConfig.Colors ?? new ConfigDefinition.LoggingColorRoot();
+        }
+
         internal static string DateTimeSep
         {
             get => RevenantConfig.LoggingConfig.DateTimeSeperator ?? "";
@@ -80,12 +85,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
         {
             get {
                 return new Dictionary<LogLevel, string> {
-                    { LogLevel.Trace, "[blue]" },
-                    { LogLevel.Debug, "[purple]" },
-                    { LogLevel.Information, "[green]" },
-                    { LogLevel.Warning, "[yellow]" },
-                    { LogLevel.Error, "[red]" },
-                    { LogLevel.Critical, "[reverse rapidblink red]" }
+                    { LogLevel.Trace, $"[{ColorConfig.LevelTrace}]" },
+                    { LogLevel.Debug, $"[{ColorConfig.LevelDebug}]" },
+                    { LogLevel.Information, $"[{ColorConfig.LevelInformation}]" },
+                    { LogLevel.Warning, $"[{ColorConfig.LevelWarning}]" },
+                    { LogLevel.Error, $"[{ColorConfig.LevelError}]" },
+                    { LogLevel.Critical, $"[{ColorConfig.LevelCritical}]" }
                 };
             }
         }
