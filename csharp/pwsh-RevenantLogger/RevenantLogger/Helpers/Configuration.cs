@@ -94,6 +94,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
             get => _runningConfig.Logging;
         }
 
+        public ConfigDefinition.LoggingColorRoot Colors
+        {
+            get => _runningConfig.Logging.Colors;
+        }
+
         public string ConfigHome
         {
             get => _configHome;
@@ -313,7 +318,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
                     TimeFormat = "HH:mm:ss.ffffK",
                     DateTimeSeperator = "T",
                     UTC = false,
-                    MinimumLogLevel = "Information"
+                    MinimumLogLevel = "Information",
+                    Colors = new ConfigDefinition.LoggingColorRoot {
+                        Timestamp = "dim cyan",
+                        TimestampSeperator = "dim grey"
+                    }
                 }
             };
         }

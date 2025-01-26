@@ -104,10 +104,10 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
                 CmdletLogger?.RLogDebug("Message is null, returning");
                 return;
             }
-            
+
             if (inputBaseType == typeof(string))
             {
-                LogMessage(Severity, StringExtensions.EscapeMarkup(Message.ToString()), Caller?.ToString());
+                LogMessage(Severity, Message.ToString(), Caller?.ToString());
             }
             else if (inputBaseType == typeof(object[]) || inputBaseType == typeof(System.Object[]))
             {
@@ -143,7 +143,6 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             //WriteObject(this);
             //WriteObject(null);
         }
-
         private void LogArray(string logLevel, Type inputType, string? caller = null)
         {
             GetFlattenedArray((object[])Message.BaseObject, recursiveCall: false);
@@ -152,13 +151,13 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             {
                 if (inputType.ToString().Contains("Hashtable") || inputType.ToString().Contains("Dictionary"))
                 {
-                    LogDictionary(Severity, inputType, Caller);
+                    LogDictionary(logLevel, inputType, caller);
                 }
                 else
                 {
                     foreach (string? item in FlattenedArray)
                     {
-                        LogMessage(Severity, StringExtensions.EscapeMarkup(item), Caller?.ToString());
+                        LogMessage(logLevel, StringExtensions.EscapeMarkup(item), caller);
                     }
                 }
             }
@@ -169,47 +168,64 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
 
             if (null != inputHash)
             {
-                LogMessage(Severity, $"Object: {StringExtensions.EscapeMarkup(inputType.ToString())}", Caller?.ToString());
+                LogMessage(logLevel, $"Object: {StringExtensions.EscapeMarkup(inputType.ToString())}", caller);
                 foreach (DictionaryEntry? item in inputHash)
                 {
                     string itemKey = StringExtensions.EscapeMarkup(item?.Key?.ToString());
                     string itemValue = StringExtensions.EscapeMarkup(item?.Value?.ToString());
-                    LogMessage(Severity, $"    [cornflowerBlue]Key[/]:   {itemKey}", Caller?.ToString());
-                    LogMessage(Severity, $"    [salmon1]Value[/]: {itemValue}", Caller?.ToString());
+                    LogMessage(logLevel, $"    [cornflowerBlue]Key[/]:   {StringExtensions.EscapeMarkup(itemKey)}", caller);
+                    LogMessage(logLevel, $"    [salmon1]Value[/]: {StringExtensions.EscapeMarkup(itemValue)}", caller);
                 }
             }
         }
         private void LogMessage(string logLevel, string message, string? caller = null)
         {
+            // To allow for explicit user Spectre markup and still be able to
+            // correctly render and log those messages. This abstraction is
+            // necessary to prevent the logger from interpreting messages
+            // that may contain Spectre's markup characters as actual markup.
+
+            string safeMessage = StringExtensions.EscapeMarkup(message.ToString())
+                .Replace("{_}", "[/]")
+                .Replace("{_", "[")
+                .Replace("_}", "]");
+
             if (String.IsNullOrWhiteSpace(logLevel))
             {
                 return;
             }
+
+            if (IsValidMarkup(safeMessage) == false)
+            {
+                WriteVerbose($"Error processing message: {LastException.Message}; Escaping markup");
+                safeMessage = StringExtensions.EscapeMarkup(message.ToString());
+            }
+
             switch (logLevel.ToLower())
             {
                 case "trace":
                 case "trc":
-                    CmdletLogger?.RLogTrace(message: message, caller: caller);
+                    CmdletLogger?.RLogTrace(message: safeMessage, caller: caller);
                     break;
                 case "debug":
                 case "dbg":
-                    CmdletLogger?.RLogDebug(message: message, caller: caller);
+                    CmdletLogger?.RLogDebug(message: safeMessage, caller: caller);
                     break;
                 case "information":
                 case "info":
-                    CmdletLogger?.RLogInformation(message: message, caller: caller);
+                    CmdletLogger?.RLogInformation(message: safeMessage, caller: caller);
                     break;
                 case "warning":
                 case "warn":
-                    CmdletLogger?.RLogWarning(message: message, caller: caller);
+                    CmdletLogger?.RLogWarning(message: safeMessage, caller: caller);
                     break;
                 case "error":
                 case "err":
-                    CmdletLogger?.RLogError(message: message, caller: caller);
+                    CmdletLogger?.RLogError(message: safeMessage, caller: caller);
                     break;
                 case "critical":
                 case "crit":
-                    CmdletLogger?.RLogCritical(message: message, caller: caller);
+                    CmdletLogger?.RLogCritical(message: safeMessage, caller: caller);
                     break;
                 case "none":
                 case "off":
@@ -217,7 +233,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
                 case "discard":
                     break;
                 default:
-                    CmdletLogger?.RLogInformation(message: message, caller: caller);
+                    CmdletLogger?.RLogInformation(message: safeMessage, caller: caller);
                     break;
             }
         }

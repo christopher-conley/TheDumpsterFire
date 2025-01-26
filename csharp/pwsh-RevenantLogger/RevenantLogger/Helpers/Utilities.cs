@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using RosettaTools.Pwsh.Text.RevenantLogger.Common;
+using static RosettaTools.Pwsh.Text.RevenantLogger.Common.StaticStrings;
 using RosettaTools.Pwsh.Text.RevenantLogger.Helpers;
 using RosettaTools.Pwsh.Text.RevenantLogger.Common.TypeFormatters;
 using System;
@@ -17,6 +18,7 @@ using System.Collections;
 using System.Diagnostics;
 using Vertical.SpectreLogger.Rendering;
 using Vertical.SpectreLogger.Core;
+using System.Globalization;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
     internal class Utilities : RevenantLoggerPSCmdlet {
@@ -59,14 +61,15 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
             return NewLoggerFactory(Config);
         }
         public static ILoggerFactory? NewLoggerFactory(IRevenantConfiguration LoggerConfig) {
-            //string timestampFormat = LoggerConfig.LoggingConfig.TimestampFormat;
             string dateFormat = LoggerConfig.LoggingConfig.DateFormat;
             string timeFormat = LoggerConfig.LoggingConfig.TimeFormat;
-            //string outputTemplate = $"{OpenBracket.Value}{{DateTime:{timestampFormat}}} {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
+
             //string outputTemplate = $"{OpenBracket.Value}{FormattedTimestamp.Value} {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
             //string outputTemplate = $"{OpenBracket.Value}[dim cyan]{{DateTime:{dateFormat}}}[/]{Sep.Value}[dim cyan]{{DateTime:{timeFormat}}}[/] {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
             //string outputTemplate = $"{OpenBracket.Value}{DateFormatStamp()}{DateTimeSep}{TimeFormatStamp()} {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
-            string outputTemplate = $"{OpenBracket.Value}[dim cyan]{{DateTime:{dateFormat}}}[/][dim grey]{Sep.Value}[/][dim cyan]{{DateTime:{timeFormat}}}[/] {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
+
+            //string outputTemplate = $"{OpenBracket.Value}[dim cyan]{{DateTime:{dateFormat}}}[/][dim grey]{Sep.Value}[/][cyan]{{DateTime:{timeFormat}}}[/] {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
+            string outputTemplate = $"{OpenBracket.Value}{{DateTime:{dateFormat}}}{SepColor}{Sep.Value}{CloseTag}{{DateTime:{timeFormat}}} {{LogLevel}}{CloseBracket.Value} {{Message}}\n{{Exception}}";
 
             return LoggerFactory.Create(builder =>
             {

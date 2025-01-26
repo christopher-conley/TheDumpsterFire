@@ -123,6 +123,14 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
     //    }
     //}
 
+    //public sealed class SepColor : RevenantLoggerBase
+    //{
+    //    public static readonly SepColor Value = new();
+
+    //    private SepColor() { }
+
+    //    public override string ToString() => "[bold grey][[[/]";
+    //}
 
     public sealed class OpenBracket : RevenantLoggerBase
     {

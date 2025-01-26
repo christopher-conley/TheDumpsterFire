@@ -268,12 +268,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
             //fileLogState = Markup.Remove(fileLogState);
 
 
-            //message = $"[{userTimestamp.ToString(LogConfigRoot.TimestampFormat)} {shortLogLevel}] {fileLogState}";
+            //message = $"[{userTimestamp.ToString(LogConfigRoot.DateFormat)}{Sep.Value}{userTimestamp.ToString(LogConfigRoot.TimeFormat)} {shortLogLevel}] {fileLogState}";
 
             message = $"[{formattedTimestamp} {shortLogLevel}] {state}";
 
 
-            //message = $"[{DateTime.Now.ToString(LogConfigRoot.TimestampFormat)} {shortLogLevel}] {_categoryName}(): {state}";
+            //message = $"[{userTimestamp.ToString(LogConfigRoot.DateFormat)}{Sep.Value}{userTimestamp.ToString(LogConfigRoot.TimeFormat)} {shortLogLevel}] {_categoryName}(): {state}";
 
             await WriteToFile(message);
         }

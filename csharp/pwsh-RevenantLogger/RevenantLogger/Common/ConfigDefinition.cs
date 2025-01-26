@@ -41,12 +41,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
             [JsonProperty(nameof(LogFilename))]
             public string LogFilename { get; set; }
 
-            [Description("The format of the date portion of the timestamp in a log line, as defined here:" +
+            [Description("The format of the date portion of a timestamped log line, as defined here:" +
     "https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")]
             [JsonProperty(nameof(DateFormat))]
             public string DateFormat { get; set; }
 
-            [Description("The format of the time portion of the timestamp in a log line, as defined here:" +
+            [Description("The format of the time portion of a timestamped log line, as defined here:" +
     "https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")]
             [JsonProperty(nameof(TimeFormat))]
             public string TimeFormat { get; set; }
@@ -55,17 +55,29 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
             [JsonProperty(nameof(DateTimeSeperator))]
             public string DateTimeSeperator { get; set; }
 
-    //        [Description("The format of the timestamp in the log file, as defined here:" +
-    //"https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings")]
-    //        [JsonProperty(nameof(TimestampFormat))]
-    //        public string TimestampFormat { get; set; }
-
+            [Description("Set to \"true\" to timestamp using UTC time.")]
             [JsonProperty(nameof(UTC))]
             public bool UTC { get; set; }
 
             [Description("The minimum log level to write to the log file.")]
             [JsonProperty(nameof(MinimumLogLevel))]
             public string MinimumLogLevel { get; set; }
+
+
+            [Description("Root node for logging configuration.")]
+            [JsonProperty(nameof(Colors))]
+            public LoggingColorRoot Colors = new();
+        }
+
+        public class LoggingColorRoot
+        {
+            [Description("The color of the timestamp in a log line.")]
+            [JsonProperty(nameof(Timestamp))]
+            public string Timestamp { get; set; }
+
+            [Description("The color of the character/string seperating the date from the time in a timestamped log line.")]
+            [JsonProperty(nameof(TimestampSeperator))]
+            public string TimestampSeperator { get; set; }
         }
     }
 }

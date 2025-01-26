@@ -13,6 +13,7 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods;
 using System.Reflection;
+using Spectre.Console;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger {
     public abstract class RevenantLoggerBase : PSCmdlet {
@@ -68,6 +69,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
         internal static string DateTimeSep
         {
             get => RevenantConfig.LoggingConfig.DateTimeSeperator ?? "";
+        }
+
+        internal static Exception LastException
+        {
+            get; set;
         }
 
         public static Dictionary<LogLevel, string> LogLevelColors
@@ -136,27 +142,19 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
             //return CmdletDIContainer.DDIServiceProvider.GetService<TService>();
         }
 
-        internal static string DateFormatStamp()
+        protected internal static bool IsValidMarkup(string testMessage = "")
         {
-            if (RevenantConfig.LoggingConfig.UTC)
-            {
-                return $"[dim cyan]{DateTime.UtcNow.ToString(RevenantConfig.LoggingConfig.DateFormat)}[/]";
-            }
-            else
-            {
-                return $"[dim cyan]{DateTime.Now.ToString(RevenantConfig.LoggingConfig.DateFormat)}[/]";
-            }
-        }
+            Markup testMarkup;
 
-        internal static string TimeFormatStamp()
-        {
-            if (RevenantConfig.LoggingConfig.UTC)
+            try
             {
-                return $"[cyan]{DateTime.UtcNow.ToString(RevenantConfig.LoggingConfig.TimeFormat)}[/]";
+                testMarkup = new Markup(testMessage.ToString());
+                return true;
             }
-            else
+            catch (Exception ex)
             {
-                return $"[cyan]{DateTime.Now.ToString(RevenantConfig.LoggingConfig.TimeFormat)}[/]";
+                LastException = ex;
+                return false;
             }
         }
 
