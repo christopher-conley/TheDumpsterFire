@@ -14,14 +14,43 @@ using System.Runtime.CompilerServices;
 using RosettaTools.Pwsh.Text.RevenantLogger.Common.ExtensionMethods;
 using System.Reflection;
 using Spectre.Console;
+using System.Dynamic;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger {
     public abstract class RevenantLoggerBase : PSCmdlet {
 
         private static Dictionary<string, ILogger?>? _iloggersList;
+        private static Dictionary<string, Guid> _userLoggersNameGUID;
+        private static Dictionary<Guid, UserLogger> _userLoggersGUIDLogger;
+        private static List<IDictionary<string, object>> _userCustomLoggers = [];
         private protected static ILoggerFactory _sharedLoggerFactory;
         private protected ILogger? _cmdletLogger;
         internal protected static IRevenantConfiguration _config;
+
+        public static Dictionary<string, Guid> UserLoggersNG
+        {
+            get {
+                _userLoggersNameGUID ??= new Dictionary<string, Guid>();
+                return _userLoggersNameGUID;
+            }
+            set => _userLoggersNameGUID = value;
+        }
+
+        public static Dictionary<Guid, UserLogger> UserLoggersGU
+        {
+            get {
+                _userLoggersGUIDLogger ??= new Dictionary<Guid, UserLogger>();
+                return _userLoggersGUIDLogger;
+            }
+            set => _userLoggersGUIDLogger = value;
+        }
+
+        public static IDictionary<string, object>[] UserCustomLoggers
+        {
+            get {
+                return _userCustomLoggers.ToArray();
+            }
+        }
         internal static DIContainer? CmdletDIContainer
         {
             get; set;
@@ -68,7 +97,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
 
         internal static ConfigDefinition.LoggingColorRoot ColorConfig
         {
-            get => RevenantConfig.LoggingConfig.Colors ?? new ConfigDefinition.LoggingColorRoot();
+            get => RevenantConfig.Colors ?? new ConfigDefinition.LoggingColorRoot();
         }
 
         internal static string DateTimeSep
@@ -202,6 +231,44 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
                 return null;
             }
             return existingLogger;
+        }
+
+        protected internal static void AddToCustomLoggers(string name, UserLogger userLogger, string? guid = null)
+        {
+            Guid parsedGuid;
+            if (null == guid)
+            {
+                parsedGuid = Guid.NewGuid();
+            }
+            else
+            {
+                parsedGuid = Guid.Parse(guid);
+            }
+            
+            AddToCustomLoggers(name, userLogger, parsedGuid);
+        }
+        protected internal static void AddToCustomLoggers(string name, UserLogger userLogger, Guid? guid = null)
+        {
+            Guid loggerGuid;
+
+            if (null == guid)
+            {
+                loggerGuid = Guid.NewGuid();
+            }
+            else
+            {
+                loggerGuid = (Guid)guid;
+            }
+
+            UserLoggersNG.Add(name, loggerGuid);
+            UserLoggersGU.Add(loggerGuid, userLogger);
+
+            var listLogger = new ExpandoObject() as IDictionary<string, object>;
+            listLogger.Add("Name", name);
+            listLogger.Add("GUID", loggerGuid);
+            listLogger.Add("Logger", userLogger);
+
+            _userCustomLoggers.Add(listLogger);
         }
 
         protected internal static void AddToLoggersList(Type loggerType, ILogger? logger)

@@ -13,6 +13,8 @@
         /// </summary>
         ConfigDefinition.LoggingRoot LoggingConfig { get; }
 
+        ConfigDefinition.LoggingColorRoot Colors { get; }
+
         /// <summary>
         /// Gets the path to the JSON configuration file.
         /// </summary>

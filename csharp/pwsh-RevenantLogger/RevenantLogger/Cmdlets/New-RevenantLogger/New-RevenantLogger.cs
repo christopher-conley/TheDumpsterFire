@@ -96,13 +96,21 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
         protected override void ProcessRecord() {
             CmdletLogger?.BeginScope("ProcessRecord");
             CmdletLogger?.RLogDebug("Inside New-RevenantLogger ProcessRecord");
+            Guid loggerGUID = Guid.NewGuid();
 
             if (string.IsNullOrWhiteSpace(Name))
             {
-                Name = $"Revenant-{Guid.NewGuid()}";
+                Name = $"Revenant-{loggerGUID}";
             }
             ILogger userLogger = SharedLoggerFactory.CreateLogger(Name);
+            UserLogger loggerObject = new UserLogger(Name, userLogger, loggerGUID);
             AddToLoggersList(Name, userLogger);
+            AddToCustomLoggers(Name, loggerObject, loggerGUID);
+
+            if (ReturnRaw)
+            {
+                _returnObject = new PSObject(loggerObject);
+            }
 
         }
 
@@ -117,20 +125,20 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
 
             if (ReturnRaw)
             {
-                var userLoggerObject = new ExpandoObject() as IDictionary<string, object?>;
-                userLoggerObject.Add("Name", Name);
-                userLoggerObject.Add("CreationTime", null);
-                if (RevenantConfig.LoggingConfig.UTC)
-                {
-                    userLoggerObject["CreationTime"] = DateTime.UtcNow;
-                }
-                else
-                {
-                    userLoggerObject["CreationTime"] = DateTime.Now;
-                }
+                //var userLoggerObject = new ExpandoObject() as IDictionary<string, object?>;
+                //userLoggerObject.Add("Name", Name);
+                //userLoggerObject.Add("CreationTime", null);
+                //if (RevenantConfig.LoggingConfig.UTC)
+                //{
+                //    userLoggerObject["CreationTime"] = DateTime.UtcNow;
+                //}
+                //else
+                //{
+                //    userLoggerObject["CreationTime"] = DateTime.Now;
+                //}
 
-                userLoggerObject.Add("Logger", new UserCustomLogger(ILoggersList[Name]));
-                _returnObject = new PSObject(userLoggerObject);
+                //userLoggerObject.Add("Logger", new UserCustomLogger(ILoggersList[Name]));
+                //_returnObject = new PSObject(userLoggerObject);
                 WriteObject(_returnObject);
             }
         }

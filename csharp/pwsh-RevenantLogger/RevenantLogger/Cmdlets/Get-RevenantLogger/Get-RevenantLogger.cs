@@ -8,11 +8,19 @@ using System.Threading.Tasks;
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets
 {
 
-    [Cmdlet(VerbsCommon.Get, "RevenantLogger")]
+    [Cmdlet(VerbsCommon.Get, "RevenantLogger", DefaultParameterSetName = "default")]
     [OutputType(typeof(Dictionary<string, ILogger?>))]
+    [OutputType(type: typeof(IDictionary<string, object>[]), ParameterSetName = ["CustomLoggers"])]
     public class CmdGetRevenantLogger : RevenantLoggerPSCmdlet
     {
         public new ILogger? CmdletLogger { get => _cmdletLogger; }
+
+        [Parameter(Mandatory = true, ParameterSetName = "CustomLoggers")]
+        public SwitchParameter CustomLoggers
+        {
+            get;
+            set;
+        }
 
         public CmdGetRevenantLogger()
         {
@@ -46,8 +54,14 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets
         {
             base.EndProcessing();
 
-            WriteObject(ILoggersList);
-
+            if (CustomLoggers)
+            {
+                WriteObject(UserCustomLoggers);
+            }
+            else
+            {
+                WriteObject(ILoggersList);
+            }
         }
 
     }
