@@ -316,23 +316,29 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
         {
 
             return new ConfigDefinition.ConfigRoot {
-                ShowLogo = false,
-                CheckForUpdates = true,
                 Logging = new ConfigDefinition.LoggingRoot {
-                    Enabled = true,
-                    LogDirectory = "logs",
-                    LogFilename = "revenantlogger.log",
-                    DateFormat = "yyyy-MM-dd",
-                    TimeFormat = "HH:mm:ss.ffffK",
-                    DateTimeSeperator = "T",
-                    UTC = false,
-                    MinimumLogLevel = "Information",
-                    Colors = new ConfigDefinition.LoggingColorRoot {
-                        Timestamp = "dim cyan",
-                        TimestampSeperator = "dim grey"
-                    }
+                    Colors = new ConfigDefinition.LoggingColorRoot()
                 }
             };
+
+            //return new ConfigDefinition.ConfigRoot {
+            //    ShowLogo = false,
+            //    CheckForUpdates = true,
+            //    Logging = new ConfigDefinition.LoggingRoot {
+            //        Enabled = true,
+            //        LogDirectory = "logs",
+            //        LogFilename = "revenantlogger.log",
+            //        DateFormat = "yyyy-MM-dd",
+            //        TimeFormat = "HH:mm:ss.ffffK",
+            //        DateTimeSeperator = "T",
+            //        UTC = false,
+            //        MinimumLogLevel = "Information",
+            //        Colors = new ConfigDefinition.LoggingColorRoot {
+            //            Timestamp = "dim cyan",
+            //            TimestampSeperator = "dim grey"
+            //        }
+            //    }
+            //};
         }
     }
 }

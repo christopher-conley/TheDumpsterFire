@@ -12,7 +12,7 @@
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>RosettaTools.Pwsh.Text.RevenantLogger</AssemblyName>
-    <AssemblyTitle>RosettaTools.Pwsh.Text.RevenantLogger</AssemblyTitle>
+    <AssemblyTitle>Revenant Logger</AssemblyTitle>
     <AssemblyVersion>$([System.IO.File]::ReadAllText("VERSION").Trim())</AssemblyVersion>
     <Version>$(AssemblyVersion)</Version>
     <InformationalVersion>$(AssemblyVersion)</InformationalVersion>
@@ -20,13 +20,11 @@
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Authors>Christohper Conley</Authors>
     <Company>Rosetta Stoned Software</Company>
-    <Description>
-      Colorful logging for PowerShell that doesn't suck.
-    </Description>
+    <Description>Colorful logging for PowerShell that doesn't suck.</Description>
     <Copyright>Copyright (c) 2024-2025 Christopher Conley</Copyright>
-    <Product>RosettaTools.Pwsh.Text.RevenantLogger</Product>
-    <ProductName>RosettaTools.Pwsh.Text.RevenantLogger</ProductName>
-    <Title>RosettaTools.Pwsh.Text.RevenantLogger</Title>
+    <Product>Revenant Logger</Product>
+    <ProductName>Revenant Logger</ProductName>
+    <Title>Revenant Logger</Title>
     <PackageProjectUrl>https://github.com/christopher-conley/pwsh-RevenantLogger</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
@@ -72,6 +70,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.4.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0" />

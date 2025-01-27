@@ -184,22 +184,31 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
                 {
                     string itemKey = StringExtensions.EscapeMarkup(item?.Key?.ToString());
                     string itemValue = StringExtensions.EscapeMarkup(item?.Value?.ToString());
-                    LogMessage(logLevel, $"    [cornflowerBlue]Key[/]:   {StringExtensions.EscapeMarkup(itemKey)}", caller);
-                    LogMessage(logLevel, $"    [salmon1]Value[/]: {StringExtensions.EscapeMarkup(itemValue)}", caller);
+                    LogMessage(logLevel, $"    {{DictKey}}   {StringExtensions.EscapeMarkup(itemKey)}", caller, args: FormatDictKey.Value);
+                    LogMessage(logLevel, $"    {{DictValue}} {StringExtensions.EscapeMarkup(itemValue)}", caller, args: FormatDictValue.Value);
                 }
             }
         }
-        private void LogMessage(string logLevel, string message, string? caller = null)
+        private void LogMessage(string logLevel, string message, string? caller = null, bool? dontEscape = false, params object?[] args)
         {
+            string safeMessage;
+
             // To allow for explicit user Spectre markup and still be able to
             // correctly render and log those messages. This abstraction is
             // necessary to prevent the logger from interpreting messages
             // that may contain Spectre's markup characters as actual markup.
 
-            string safeMessage = StringExtensions.EscapeMarkup(message.ToString())
+            if (dontEscape == true)
+            {
+                safeMessage = message;
+            }
+            else
+            {
+                safeMessage = StringExtensions.EscapeMarkup(message.ToString())
                 .Replace("{_}", "[/]")
                 .Replace("{_", "[")
                 .Replace("_}", "]");
+            }
 
             if (String.IsNullOrWhiteSpace(logLevel))
             {
@@ -216,27 +225,27 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             {
                 case "trace":
                 case "trc":
-                    CmdletLogger?.RLogTrace(message: safeMessage, caller: caller);
+                    CmdletLogger?.RLogTrace(message: safeMessage, caller: caller, args);
                     break;
                 case "debug":
                 case "dbg":
-                    CmdletLogger?.RLogDebug(message: safeMessage, caller: caller);
+                    CmdletLogger?.RLogDebug(message: safeMessage, caller: caller, args);
                     break;
                 case "information":
                 case "info":
-                    CmdletLogger?.RLogInformation(message: safeMessage, caller: caller);
+                    CmdletLogger?.RLogInformation(message: safeMessage, caller: caller, args);
                     break;
                 case "warning":
                 case "warn":
-                    CmdletLogger?.RLogWarning(message: safeMessage, caller: caller);
+                    CmdletLogger?.RLogWarning(message: safeMessage, caller: caller, args);
                     break;
                 case "error":
                 case "err":
-                    CmdletLogger?.RLogError(message: safeMessage, caller: caller);
+                    CmdletLogger?.RLogError(message: safeMessage, caller: caller, args);
                     break;
                 case "critical":
                 case "crit":
-                    CmdletLogger?.RLogCritical(message: safeMessage, caller: caller);
+                    CmdletLogger?.RLogCritical(message: safeMessage, caller: caller, args);
                     break;
                 case "none":
                 case "off":
@@ -244,7 +253,7 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
                 case "discard":
                     break;
                 default:
-                    CmdletLogger?.RLogInformation(message: safeMessage, caller: caller);
+                    CmdletLogger?.RLogInformation(message: safeMessage, caller: caller, args);
                     break;
             }
         }

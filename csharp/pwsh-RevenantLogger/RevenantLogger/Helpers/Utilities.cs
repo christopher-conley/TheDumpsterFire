@@ -88,6 +88,8 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers {
                         profiles.AddTypeStyle<SuccessMessage>("[green1]");
                         profiles.AddTypeStyle<WarnMessage>("[yellow1]");
                         profiles.AddTypeStyle<FailMessage>("[red1]");
+                        profiles.AddTypeStyle<FormatDictKey>("[cornflowerBlue]");
+                        profiles.AddTypeStyle<FormatDictValue>("[salmon1]");
                         profiles.AddTypeStyle<DateTimeRenderer.Value>($"[{ColorConfig.Timestamp}]");
                         profiles.AddValueStyle(false, $"[{ColorConfig.BoolFalse}]");
                         profiles.AddValueStyle(true, $"[{ColorConfig.BoolTrue}]");

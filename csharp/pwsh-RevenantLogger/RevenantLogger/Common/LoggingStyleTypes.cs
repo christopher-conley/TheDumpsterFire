@@ -32,7 +32,23 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common {
         public override string ToString() => "FAILURE";
     }
 
+    public sealed class FormatDictKey : RevenantLoggerBase
+    {
+        public static readonly FormatDictKey Value = new();
 
+        private FormatDictKey() { }
+
+        public override string ToString() => "Key:";
+    }
+
+    public sealed class FormatDictValue : RevenantLoggerBase
+    {
+        public static readonly FormatDictValue Value = new();
+
+        private FormatDictValue() { }
+
+        public override string ToString() => "Value:";
+    }
 
     public sealed class Sep : RevenantLoggerBase
     {

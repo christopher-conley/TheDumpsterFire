@@ -10,13 +10,17 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Dynamic;
 
 namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
-    [Cmdlet(VerbsCommon.New, "RevenantLogger")]
+    [Cmdlet(VerbsCommon.New, "RevenantLogger", DefaultParameterSetName = "default")]
     //[OutputType(typeof(ILogger))]
-    [OutputType(typeof(CmdNewRevenantLogger))]
+    //[OutputType(typeof(CmdNewRevenantLogger))]
+    [OutputType(typeof(void))]
+    [OutputType(type: typeof(PSObject), ParameterSetName = ["RawLogger"])]
     public class CmdNewRevenantLogger : RevenantLoggerPSCmdlet {
-        private LoggerObject _returnObject;
+        private UserCustomLogger _oldreturnObject;
+        private PSObject _returnObject;
 
         [Parameter(Mandatory = false)]
         [Alias("Configuration", "ConfigFile")]
@@ -32,6 +36,29 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             get;
             set;
         }
+
+        [Parameter(Mandatory = false)]
+        [Alias("Create-RevenantLogger")]
+#if NET8_0_OR_GREATER
+        [ValidateNotNullOrWhiteSpace()]
+#else
+        [ValidateNotNullOrEmpty()]
+#endif
+        [ValidateString(minLength: 1, allowNull: false, allowWhitespace: false)]
+        public string Name
+        {
+            get;
+            set;
+        }
+
+        [Parameter(Mandatory = false, ParameterSetName = "default")]
+        [Parameter(Mandatory = true, ParameterSetName = "RawLogger")]
+        public SwitchParameter ReturnRaw
+        {
+            get;
+            set;
+        }
+
 
         public new ILogger? CmdletLogger { get => _cmdletLogger; }
 
@@ -58,29 +85,54 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
 
             InitDIContainer<CmdEditRevenantLoggerConfig>();
 
-            BaseBootstrap = GetExistingPSVariable<Bootstrap>(SessionState: this.SessionState, psVariable: "__RevenantLoggerExistingBootstrap");
-            BaseBootstrap ??= new Bootstrap(SessionState: this.SessionState);
+            //BaseBootstrap = GetExistingPSVariable<Bootstrap>(SessionState: this.SessionState, psVariable: "__RevenantLoggerExistingBootstrap");
+            //BaseBootstrap ??= new Bootstrap(SessionState: this.SessionState);
 
             CmdletLogger?.BeginScope(methodName);
-            CmdletLogger?.LogInformation("{success}: {methodName}(): Inside New-RevenantLogger BeginProcessing", SuccessMessage.Value, methodName);
+            CmdletLogger?.RLogDebug("{success}: {methodName}(): Inside New-RevenantLogger BeginProcessing", caller: methodName, args: SuccessMessage.Value);
         }
 
         // This method will be called for each input received from the pipeline to this cmdlet; if no input is received, this method is not called
         protected override void ProcessRecord() {
             CmdletLogger?.BeginScope("ProcessRecord");
-            CmdletLogger?.LogInformation("Inside New-RevenantLogger ProcessRecord");
+            CmdletLogger?.RLogDebug("Inside New-RevenantLogger ProcessRecord");
+
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                Name = $"Revenant-{Guid.NewGuid()}";
+            }
+            ILogger userLogger = SharedLoggerFactory.CreateLogger(Name);
+            AddToLoggersList(Name, userLogger);
+
         }
 
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called
         protected override void EndProcessing() {
             CmdletLogger?.BeginScope("EndProcessing");
-            CmdletLogger?.LogInformation("Inside New-RevenantLogger EndProcessing");
+            CmdletLogger?.RLogDebug("Inside New-RevenantLogger EndProcessing");
 
-            _returnObject = new LoggerObject(BaseBootstrap.Logger);
+            //_oldreturnObject = new UserCustomLogger(BaseBootstrap.Logger);
 
             BuiltLoggers = ILoggersList;
 
-            WriteObject(this);
+            if (ReturnRaw)
+            {
+                var userLoggerObject = new ExpandoObject() as IDictionary<string, object?>;
+                userLoggerObject.Add("Name", Name);
+                userLoggerObject.Add("CreationTime", null);
+                if (RevenantConfig.LoggingConfig.UTC)
+                {
+                    userLoggerObject["CreationTime"] = DateTime.UtcNow;
+                }
+                else
+                {
+                    userLoggerObject["CreationTime"] = DateTime.Now;
+                }
+
+                userLoggerObject.Add("Logger", new UserCustomLogger(ILoggersList[Name]));
+                _returnObject = new PSObject(userLoggerObject);
+                WriteObject(_returnObject);
+            }
         }
     }
 }
