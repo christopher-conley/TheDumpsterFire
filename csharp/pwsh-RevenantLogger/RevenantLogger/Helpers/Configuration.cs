@@ -39,10 +39,14 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
                         _appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config");
                         if (Directory.Exists(_appDataDir) == false)
                         {
+#if NET8_0_OR_GREATER
                             Directory.CreateDirectory(_appDataDir,
                                 UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
                                 UnixFileMode.GroupRead | UnixFileMode.GroupExecute
                                 );
+#else
+                            Directory.CreateDirectory(_appDataDir);
+#endif
                         }
                         return _appDataDir;
                     }
@@ -194,10 +198,14 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
             {
                 if (_isLinux)
                 {
+#if NET8_0_OR_GREATER
                     Directory.CreateDirectory(_configHome,
                         UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
                         UnixFileMode.GroupRead | UnixFileMode.GroupExecute
                         );
+#else
+                    Directory.CreateDirectory(_configHome);
+#endif
                 }
                 else
                 {

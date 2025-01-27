@@ -287,7 +287,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
 
                 byte[] utf8Text = Encoding.UTF8.GetBytes(message + Environment.NewLine);
                 using FileStream logStream = new(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096);
+#if NET8_0_OR_GREATER
                 await logStream.WriteAsync(utf8Text);
+#else
+                await logStream.WriteAsync(utf8Text, 0, utf8Text.Length);
+#endif
             }
             finally
             {
@@ -303,10 +307,14 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Helpers
             {
                 if (_runtimeConfig.IsLinux)
                 {
+#if NET8_0_OR_GREATER
                     Directory.CreateDirectory(LogPath,
                         UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
                         UnixFileMode.GroupRead | UnixFileMode.GroupExecute
                         );
+#else
+                    Directory.CreateDirectory(LogPath);
+#endif
                 }
                 else
                 {

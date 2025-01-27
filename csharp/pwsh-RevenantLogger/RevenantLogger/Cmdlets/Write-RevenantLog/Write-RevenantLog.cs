@@ -25,7 +25,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
 
         [Parameter(Mandatory = false)]
         [Alias("Configuration", "ConfigFile")]
+#if NET8_0_OR_GREATER
         [ValidateNotNullOrWhiteSpace()]
+#else
+        [ValidateNotNullOrEmpty()]
+#endif
         [ValidateString(minLength: 2)]
         [ValidateTypes(typeof(string), typeof(FileInfo))]
         public PSObject Config
@@ -140,6 +144,13 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             CmdletLogger?.BeginScope("EndProcessing");
             CmdletLogger?.RLogDebug("Inside Write-RevenantLogger EndProcessing");
             BuiltLoggers = ILoggersList;
+
+            LogMessage("Warn", "Colors are: ");
+            foreach (var prop in RevenantConfig.LoggingConfig.Colors.GetType().GetProperties())
+            {
+                var propValue = prop.GetValue(RevenantConfig.LoggingConfig.Colors);
+                LogMessage("Warn", $"\n\nName: {prop.Name}\nValue: {propValue}");
+            }
             //WriteObject(this);
             //WriteObject(null);
         }

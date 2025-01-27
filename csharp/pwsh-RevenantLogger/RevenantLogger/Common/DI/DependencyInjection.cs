@@ -156,9 +156,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Common
                 .ConfigureAppConfiguration(c => {
                     c.SetBasePath(basePath);
                 })
+#if NET8_0_OR_GREATER
                 .ConfigureHostOptions(options => {
                     options.ShutdownTimeout = TimeSpan.FromSeconds(15);
                 })
+#endif
                 .ConfigureServices((context, services) => {
                     services.AddSingleton<IRevenantConfiguration, Configuration>();
                     services.AddSingleton<ILoggerFactory>(_sharedLoggerFactory);

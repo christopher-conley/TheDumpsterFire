@@ -150,7 +150,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets
             };
 
             proc.Start();
+#if NET8_0_OR_GREATER
             proc.WaitForExitAsync();
+#else
+            proc.WaitForExit();
+#endif
             proc.Dispose();
 
             AnsiConsole.WriteLine();

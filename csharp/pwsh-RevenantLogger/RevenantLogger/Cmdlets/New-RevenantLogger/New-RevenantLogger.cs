@@ -20,7 +20,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
 
         [Parameter(Mandatory = false)]
         [Alias("Configuration", "ConfigFile")]
+#if NET8_0_OR_GREATER
         [ValidateNotNullOrWhiteSpace()]
+#else
+        [ValidateNotNullOrEmpty()]
+#endif
         [ValidateString(minLength: 2)]
         //[ValidateTypes(typeof(string), typeof(PSCustomObject))]
         [ValidateTypes(typeof(string), typeof(FileInfo))]

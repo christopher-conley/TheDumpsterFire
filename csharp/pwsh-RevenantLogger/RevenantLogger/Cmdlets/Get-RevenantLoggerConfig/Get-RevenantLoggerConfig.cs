@@ -82,14 +82,22 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets
                 .CommaStyle(new Style(foreground: Color.White, null, Decoration.Bold | Decoration.Italic))
                 .MemberStyle(new Style(foreground: Color.CornflowerBlue, null))
                 .NullStyle(new Style(foreground: Color.Grey46, background: Color.Red, Decoration.Strikethrough | Decoration.SlowBlink))
+#if NET8_0_OR_GREATER
                 .StringColor(Color.FromHex("CE9178"))
+#else
+                .StringColor(Color.Salmon1)
+#endif
                 .BooleanStyle(new Style(foreground: Color.Red, null, Decoration.Bold | Decoration.Underline))
                 .NumberStyle(new Style(Color.Green1, default, Decoration.Bold));
 
             AnsiConsole.Write(
                 new Rule()
                     .Centered()
+#if NET8_0_OR_GREATER
                     .RuleStyle(Color.DarkGoldenrod)
+#else
+                    .RuleStyle(new Style(Color.DarkGoldenrod))
+#endif
             );
 
             AnsiConsole.Write(
@@ -108,7 +116,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets
             AnsiConsole.Write(
                 new Rule($"Configuration file at: [green]{RevenantConfig.DefaultConfigFile}[/]")
                     .Centered()
+#if NET8_0_OR_GREATER
                     .RuleStyle(Color.DarkGoldenrod)
+#else
+                    .RuleStyle(new Style(Color.DarkGoldenrod))
+#endif
             );
         }
     }

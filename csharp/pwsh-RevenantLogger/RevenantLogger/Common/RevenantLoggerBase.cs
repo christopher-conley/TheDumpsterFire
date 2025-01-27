@@ -232,8 +232,11 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger {
             {
                 return;
             }
-
+#if NET8_0_OR_GREATER
             if (ILoggersList.TryAdd(loggerType, logger) == false)
+#else
+            if (ILoggersList.ContainsKey(loggerType) == false)
+#endif
             {
                 ILoggersList[loggerType] = logger;
                 return;
