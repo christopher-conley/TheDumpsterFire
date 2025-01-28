@@ -145,12 +145,12 @@ namespace RosettaTools.Pwsh.Text.RevenantLogger.Cmdlets {
             CmdletLogger?.RLogDebug("Inside Write-RevenantLogger EndProcessing");
             BuiltLoggers = ILoggersList;
 
-            LogMessage("Warn", "Colors are: ");
-            foreach (var prop in RevenantConfig.LoggingConfig.Colors.GetType().GetProperties())
-            {
-                var propValue = prop.GetValue(RevenantConfig.LoggingConfig.Colors);
-                LogMessage("Warn", $"\n\nName: {prop.Name}\nValue: {propValue}");
-            }
+            //LogMessage("Warn", "Colors are: ");
+            //foreach (var prop in RevenantConfig.LoggingConfig.Colors.GetType().GetProperties())
+            //{
+            //    var propValue = prop.GetValue(RevenantConfig.LoggingConfig.Colors);
+            //    LogMessage("Warn", $"\n\nName: {prop.Name}\nValue: {propValue}");
+            //}
             //WriteObject(this);
             //WriteObject(null);
         }
