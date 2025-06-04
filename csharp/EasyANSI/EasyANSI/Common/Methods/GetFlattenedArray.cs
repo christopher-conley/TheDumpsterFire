@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,98 +8,98 @@ using System.Threading.Tasks;
 namespace RosettaTools.Text.EasyANSI {
     public abstract partial class EasyANSIPSCmdlet : EasyANSIBase {
 
-        private string[]? _flattenedArray;
+        private List<string> _scratchList = [];
+        private object[] _scratchArray;
         private List<string> _arrayList = [];
-        private int _totalOriginalItems = 0;
-        private int _totalItems = 0;
-        private int _skippedItems = 0;
-        private int _arrayIterator = 0;
-        private bool _inRecursion;
 
-        private int ArrayIterator
-        {
-            get => _arrayIterator;
-            set {
-                _totalItems += value;
-                if (InRecursion) {
-                    return;
+        private protected string[] GetFlattenedArray(object[] InputArray) {
+
+            foreach (var item in InputArray)
+            {
+                if (null == item)
+                {
+                    WriteDebug("Encountered null item in input array, skipping.");
+                    continue;
                 }
-                else {
-                    _arrayIterator += value;
+                if (item is string strItem)
+                {
+                    _scratchList.Add(strItem);
+                }
+                else if (item is System.Array arrItem)
+                {
+                    _scratchList.Add(GetStringFromArray(arrItem));
+                }
+                else
+                {
+                    _scratchList.Add(item.ToString() ?? String.Empty);
                 }
             }
+
+            _scratchArray = _scratchList.ToArray();
+
+            foreach (string? item in _scratchArray)
+            {
+                if (string.IsNullOrWhiteSpace(item))
+                {
+                    WriteDebug("Encountered empty or whitespace item in staging array, skipping.");
+                    continue;
+                }
+                _arrayList.Add(item);
+            }
+
+            return _arrayList.ToArray();
         }
 
-        public string[]? FlattenedArray { get => _flattenedArray; set => _flattenedArray = value; }
-        public List<string> ArrayList { get => _arrayList; set => _arrayList = value; }
-        private protected int TotalOriginalItems { get => _totalOriginalItems; set => _totalOriginalItems = value; }
-        private protected int TotalItems { get => _totalItems; set => _totalItems = value; }
-        private protected int SkippedItems { get => _skippedItems; set => _skippedItems = value; }
-        private protected bool InRecursion { get => _inRecursion; set => _inRecursion = value; }
+        private string GetStringFromArray<TObject>(TObject inputArray) where TObject : IEnumerable
+        {
 
-        private protected void GetFlattenedArray(object[] inputArray, bool recursiveCall) {
-            ArrayIterator++;
-
-            if (recursiveCall) {
-                InRecursion = true;
-            }
-            else {
-                InRecursion = false;
-                TotalOriginalItems = inputArray.Length;
+            if (null == inputArray)
+            {
+                return string.Empty;
             }
 
-            if (inputArray.Length == 0) {
-                ArrayIterator++;
-                SkippedItems++;
-                if ((!InRecursion) && (TotalOriginalItems == 0)) {
-                    StringsToParse = new StringInfo();
-                }
-                return;
+            var inputItem = inputArray as object[];
+
+            if (null == inputItem || inputItem.Length == 0)
+            {
+                return string.Empty;
             }
 
-            foreach (var item in inputArray) {
-                if (null == item) {
-                    ArrayIterator++;
-                    SkippedItems++;
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var item in inputItem)
+            {
+                if (item == null)
+                {
+                    WriteDebug("Encountered null item in nested input array, skipping.");
                     continue;
                 }
-                if (item is System.String) {
-                    if ((String.IsNullOrWhiteSpace(item as string))) {
-                        ArrayIterator++;
-                        SkippedItems++;
-                        continue;
-                    }
-                    ArrayList.Add((string)item);
-                }
 
-                else if (item is System.Array) {
-                    if ((null == item) || ((item as object[]).Length == 0)) {
-                        ArrayIterator++;
-                        SkippedItems++;
-                        continue;
-                    }
-                    GetFlattenedArray(inputArray: (object[])item, recursiveCall: true);
-                }
-
-                else {
-                    WriteDebug("Encountered unknown/invalid item type, skipping.");
-                    ArrayIterator++;
-                    SkippedItems++;
+                else if (item is System.Array arrayItem)
+                {
+                    sb.Append(Environment.NewLine);
+                    // Recursively call self to handle n amount of nested arrays
+                    sb.Append(GetStringFromArray(arrayItem.Cast<object>().ToArray()));
                     continue;
                 }
+
+                else if (item is IEnumerable<object> enumerableItem)
+                {
+                    foreach (var subItem in enumerableItem)
+                    {
+                        sb.Append(subItem?.ToString() ?? String.Empty);
+                        sb.Append(Environment.NewLine);
+                    }
+                    continue;
+                }
+
+                else if (item is string stringItem)
+                {
+                    sb.Append(item);
+                }
             }
 
-            if (!InRecursion) {
-                FlattenedArray = ArrayList.ToArray();
-                StringsToParse = new StringInfo {
-                    TotalItems = TotalItems,
-                    TotalOriginalItems = TotalOriginalItems,
-                    SkippedItems = SkippedItems,
-                    FlattenedArray = FlattenedArray
-                };
-            }
-
-            InRecursion = false;
+            return sb.ToString();
         }
     }
 }

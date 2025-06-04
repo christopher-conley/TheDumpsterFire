@@ -6,7 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>RosettaTools.Text.EasyANSI</RootNamespace>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- GenerateDocumentationFile>true</GenerateDocumentationFile> -->
     <AssemblyName>RosettaTools.Text.EasyANSI</AssemblyName>
     <AssemblyTitle>EasyANSI</AssemblyTitle>
     <AssemblyVersion>$([System.IO.File]::ReadAllText("VERSION").Trim())</AssemblyVersion>
