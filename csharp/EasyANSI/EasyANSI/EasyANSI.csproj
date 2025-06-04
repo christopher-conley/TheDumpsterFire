@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
     <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>RosettaTools.Text.EasyANSI</AssemblyName>
     <AssemblyTitle>EasyANSI</AssemblyTitle>
-    <AssemblyVersion>2024.12.24</AssemblyVersion>
+    <AssemblyVersion>$([System.IO.File]::ReadAllText("VERSION").Trim())</AssemblyVersion>
     <Authors>Christohper Conley</Authors>
     <Company>Rosetta Stoned Software</Company>
     <Description>
@@ -37,6 +37,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <ProjectGuid>0945e509-fea9-dead-beef-b36cff6c5bf3</ProjectGuid>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -72,6 +73,12 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageReference Include="System.Management.Automation">
       <Version>7.4.6</Version>
+    </PackageReference>
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <PackageReference Include="System.Management.Automation">
+      <Version>7.5.1</Version>
     </PackageReference>
   </ItemGroup>
 
