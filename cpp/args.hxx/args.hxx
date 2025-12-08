@@ -397,9 +397,9 @@ namespace args
 
         /** Get just the short flags from an initializer list of EitherFlags
          */
-        static std::unordered_set<char> GetShort(std::initializer_list<EitherFlag> flags)
+        static std::unordered_set<wchar_t> GetShort(std::initializer_list<EitherFlag> flags)
         {
-            std::unordered_set<char>  shortFlags;
+            std::unordered_set<wchar_t>  shortFlags;
             for (const EitherFlag &flag: flags)
             {
                 if (flag.isShort)
@@ -432,7 +432,7 @@ namespace args
     class Matcher
     {
         private:
-            const std::unordered_set<char> shortFlags;
+            const std::unordered_set<wchar_t> shortFlags;
             const std::unordered_set<std::wstring> longFlags;
 
         public:
@@ -4100,7 +4100,7 @@ namespace args
 
             virtual std::wstring Name() const override
             {
-                return name + std::wstring("...");
+                return name + std::wstring(L"...");
             }
 
             virtual void Reset() noexcept override
@@ -4293,7 +4293,7 @@ namespace args
 
             virtual std::wstring Name() const override
             {
-                return name + std::wstring("...");
+                return name + std::wstring(L"...");
             }
 
             /** Get the values
@@ -4566,7 +4566,7 @@ namespace args
 
             virtual std::wstring Name() const override
             {
-                return name + std::wstring("...");
+                return name + std::wstring(L"...");
             }
 
             virtual void Reset() noexcept override
