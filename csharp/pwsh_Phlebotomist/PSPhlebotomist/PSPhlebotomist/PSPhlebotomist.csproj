@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>PSPhlebotomist</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ProjectGuid>BADB100D-2321-4D45-4F57-4D5ABADB100D</ProjectGuid>
+    <LangVersion>latest</LangVersion>
+    <Version>2025.12.20.0446</Version>
+    <Nullable>enable</Nullable>
+    <Authors>Christopher Conley</Authors>
+    <Description>It's just a little prick</Description>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include=".\.editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PSPhlebotomist.psd1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EditorConfigFiles Remove=".\.editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Config\Logging\Runtime\serilog-config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Import Project="..\.paket\Paket.Restore.targets" />
+</Project>

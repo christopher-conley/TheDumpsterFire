@@ -1,0 +1,72 @@
+{
+  "Serilog": {
+    "LevelSwitches": {
+      "controlSwitch": "Verbose"
+    },
+    "Using": [
+      "Serilog.Expressions",
+      "Serilog.Sinks.Console",
+      "Serilog.Sinks.Async",
+      "Serilog.Sinks.TextWriter",
+      "Serilog.Sinks.Map",
+      "Serilog.Sinks.Debug",
+      "Serilog.Sinks.File"
+    ],
+    "MinimumLevel": {
+      "Default": "Verbose",
+      "Override": {
+        "Microsoft": "Warning"
+      }
+    },
+    "Enrich": [
+      "WithCallerNameEnricher",
+      "FromLogContext",
+      "WithThreadId",
+      "WithThreadName",
+      "WithExceptionDetails",
+      "FromGlobalLogContext"
+    ],
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "formatter": {
+            "type": "Serilog.Templates.ExpressionTemplate, Serilog.Expressions",
+            "template": "[{@t:yyyy-MM-ddTHH:mm:ss}][{@l:u3}] {Substring(SourceContext, LastIndexOf(SourceContext, '.') + 1)}(): {@m} \n{@x}",
+            "theme": "Serilog.Templates.Themes.CustomThemes::Sixteenish, PSPhlebotomist",
+            "controlLevelSwitch": "$controlSwitch",
+            "restrictedToMinimumLevel": "Information"
+          }
+        }
+      },
+      {
+        "Name": "Async",
+        "Args": {
+          "configure": [
+            {
+              "Name": "File",
+              "Args": {
+                "formatter": {
+                  "type": "Serilog.Templates.ExpressionTemplate, Serilog.Expressions",
+                  "template": "[{@t:yyyy-MM-dd HH:mm:ss.fff zzz}][{@l:u3}] {SourceContext}(): {@m:lj} \n{@x}",
+                  "controlLevelSwitch": "$controlSwitch",
+                  "restrictedToMinimumLevel": "Information"
+                },
+                "path": "%APPDATA%\\rosettatools\\PSPhlebotomist\\PatientRecord.log",
+                "restrictedToMinimumLevel": "Verbose",
+                "rollingInterval": "Infinite",
+                "rollOnFileSizeLimit": true,
+                "fileSizeLimitBytes": 10485760,
+                "retainedFileCountLimit": null,
+                "buffered": false,
+                "controlLevelSwitch": "$controlSwitch",
+                "shared": false,
+                "encoding": "System.Text.Encoding::UTF8"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

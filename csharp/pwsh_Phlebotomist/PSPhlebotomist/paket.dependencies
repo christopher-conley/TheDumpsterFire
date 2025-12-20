@@ -1,0 +1,36 @@
+framework: netstandard2.0
+
+source https://api.nuget.org/v3/index.json
+
+nuget Microsoft.Bcl.AsyncInterfaces ~> 1.1.1
+nuget System.Text.Json ~> 4.7.2
+nuget Microsoft.Extensions.Hosting ~> 3.1.32
+nuget Microsoft.Extensions.Logging ~> 3.1.32
+nuget Microsoft.Extensions.DependencyModel ~> 3.1.25
+nuget Microsoft.Extensions.Configuration.Json ~> 3.1.32
+nuget Microsoft.Extensions.Configuration.Abstractions ~> 3.1.32
+nuget Spectre.Console >= 0.54.0
+nuget Spectre.Console.Cli >= 0.53.1
+nuget Spectre.Console.Json >= 0.54.0
+nuget PowerShellStandard.Library ~> 5.1.1
+nuget Microsoft.CSharp ~> 4.7.0
+nuget System.Security.Principal.Windows ~> 5.0.0
+nuget Serilog
+nuget Serilog.Enrichers.Environment
+nuget Serilog.Enrichers.GlobalLogContext
+nuget Serilog.Enrichers.Thread
+nuget Serilog.Exceptions
+nuget Serilog.Expressions
+nuget Serilog.Extensions.Hosting
+nuget Serilog.Extensions.Logging
+nuget Serilog.Formatting.Compact
+nuget Serilog.Formatting.Compact.Reader
+nuget Serilog.Settings.Configuration
+nuget Serilog.Sinks.Async
+nuget Serilog.Sinks.Console
+nuget Serilog.Sinks.Debug
+nuget Serilog.Sinks.File
+nuget Serilog.Sinks.Map
+nuget Serilog.Sinks.Spectre
+nuget Serilog.Sinks.TextWriter
+
